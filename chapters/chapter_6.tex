@@ -9,7 +9,7 @@ To establish dense object detection baselines for UAV disaster monitoring, seven
 
 \begin{table}[H]
 \centering
-\caption{Dense Smoke and Fire Object Detection Benchmark on D-Fire ($n=21{,}527$ images, 512/640px input). Models are evaluated on localized smoke and flame bounding box detection. Time is the wall-clock duration of each saved training run up to its stopping point; because per-epoch learning curves are not compared, differences in time indicate training cost, not convergence rate.}
+\caption{Dense Smoke and Fire Object Detection Benchmark on D-Fire (21{,}527 images; metrics on the official 4{,}306-image test split, with a validation split carved from the official training images). Time is the summed wall-clock duration of all training segments. Recipes differ: YOLO26n, Hazard-YOLO26n and YOLOv10n share one recipe (512\,px, AdamW, 40 epochs, batch 16); YOLO26s (CLAHE) uses 640\,px, SGD, 100 epochs and batch 4; YOLO26n (CLAHE, fine-tune) continues from the YOLO26n checkpoint for 20 epochs at 640\,px, so its time is in addition to that run's 4.45\,h. Best value per column in bold.}
 \label{tab:dfire_results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llccccccc@{}}
@@ -17,11 +17,11 @@ To establish dense object detection baselines for UAV disaster monitoring, seven
 \textbf{Model / Experiment} & \textbf{Architecture} & \textbf{Time (h)} & \textbf{Prec.} & \textbf{Rec.} & \textbf{mAP$_{50}$} & \textbf{mAP$_{50{:}95}$} & \textbf{AP$^{smoke}_{50}$} & \textbf{AP$^{fire}_{50}$} \\
 \midrule
 YOLO26s (CLAHE) & YOLO26s~\cite{sapkota2025yolo26} & 42.6 & \textbf{0.769} & \textbf{0.701} & \textbf{0.7710} & \textbf{0.4480} & \textbf{0.8485} & \textbf{0.6936} \\
-\textbf{RT-DETRv2-R18} & RT-DETRv2-R18~\cite{lv2024rtdetrv2} & 7.85 & 0.742 & 0.678 & \textbf{0.7380} & 0.4215 & 0.8120 & 0.6640 \\
+RT-DETRv2-R18 & RT-DETRv2-R18~\cite{lv2024rtdetrv2} & 7.85 & 0.742 & 0.678 & 0.7380 & 0.4215 & 0.8120 & 0.6640 \\
 YOLO26n (CLAHE, fine-tune) & YOLO26n~\cite{sapkota2025yolo26} & 4.28 & 0.736 & 0.666 & 0.7258 & 0.4088 & 0.7964 & 0.6551 \\
-\textbf{YOLO11n Baseline} & YOLO11n~\cite{ultralytics2024yolo11} & 4.60 & 0.728 & 0.659 & \textbf{0.7225} & 0.4052 & 0.7910 & 0.6540 \\
-YOLO26n (baseline) & YOLO26n~\cite{sapkota2025yolo26} & 4.45 & 0.712 & 0.647 & 0.7147 & 0.4005 & 0.7833 & 0.6460 \\
-\textbf{Hazard-YOLO26n (HPG)} & \textbf{YOLO26n + HPG} & \textbf{1.96} & 0.715 & 0.636 & \textbf{0.7053} & 0.3989 & 0.7812 & 0.6294 \\
+YOLO11n Baseline & YOLO11n~\cite{ultralytics2024yolo11} & 4.60 & 0.728 & 0.659 & 0.7225 & 0.4052 & 0.7910 & 0.6540 \\
+YOLO26n (baseline) & YOLO26n~\cite{sapkota2025yolo26} & \textbf{4.45} & 0.712 & 0.647 & 0.7147 & 0.4005 & 0.7833 & 0.6460 \\
+Hazard-YOLO26n (HPG) & YOLO26n + HPG & 8.65 & 0.715 & 0.636 & 0.7053 & 0.3989 & 0.7812 & 0.6294 \\
 YOLOv10n (baseline) & YOLOv10n~\cite{wang2024yolov10} & 5.07 & 0.681 & 0.619 & 0.6775 & 0.3751 & 0.7528 & 0.6023 \\
 \bottomrule
 \end{tabular}%
@@ -31,10 +31,10 @@ YOLOv10n (baseline) & YOLOv10n~\cite{wang2024yolov10} & 5.07 & 0.681 & 0.619 & 0
 \textbf{Finding 1: High-Capacity and Transformer Detectors Establish Ceiling Performance.}
 The high-capacity YOLO26s (CLAHE) achieves 77.10\% mAP$_{50}$ (with smoke detection reaching 84.85\% AP$_{50}$ and flame reaching 69.36\% AP$_{50}$). The real-time transformer RT-DETRv2-R18 attains 73.80\% mAP$_{50}$, while the modern lightweight YOLO11n baseline achieves 72.25\% mAP$_{50}$. Across all models, smoke detection consistently outperforms fire detection by 13.7 to 15.5 percentage points, plausibly because smoke has a larger spatial footprint and distinctive contrast against the background.
 
-\textbf{Finding 2: Hazard Prior Gate (HPG) Shortens the Saved Training Run at a Modest Accuracy Cost.}
-The Hazard Prior Gate (HPG) injects physical chromaticity priors ($2R - G - B$ for flame red-excess, $1 - \text{saturation}$ for smoke achromaticity, and Sobel edge gradients) directly into the detection backbone at stride 4. Our Hazard-YOLO26n run reached \textbf{70.53\% mAP$_{50}$ after 1.96 hours of training}, against 71.47\% after 4.45 hours for the baseline YOLO26n run (a 2.27$\times$ reduction in wall-clock time for a 0.94 percentage-point lower mAP$_{50}$) and 73.80\% after 7.85 hours for RT-DETRv2 (4.0$\times$ less time, 3.27 points lower).
+\textbf{Finding 2: The Hazard Prior Gate (HPG) Does Not Improve YOLO26n on D-Fire.}
+The HPG computes red-excess, achromaticity and Sobel edge cues from the input frame and applies a bounded residual correction before the YOLO26n stem (Section~\ref{sec:hpg}). Both runs used the same recipe and both ran all 40 epochs. Hazard-YOLO26n reached 70.53\% test mAP$_{50}$, 0.94 points below the 71.47\% of the baseline YOLO26n, and took 8.65 hours against 4.45 hours: about 770\,s per epoch against 400\,s, most likely because the cue maps are computed on the full-resolution frame before pooling. Its per-epoch validation mAP$_{50}$ tracks the baseline closely (for example 0.703 against 0.702 at epoch 31, and 0.709 against 0.707 at epoch 40), so the logs show neither faster convergence nor higher accuracy.
 
-This is a training-cost result, not a convergence-rate result. Establishing faster convergence would require per-epoch validation curves for both runs under a matched stopping rule, for example the wall-clock time at which each model first reaches a common mAP$_{50}$ threshold. Our logs establish only that the HPG run stopped sooner and finished at a lower final accuracy, which is compatible with faster convergence, with an earlier early-stopping trigger, or with a lower accuracy plateau. If the trade-off holds under controlled comparison, a shorter retraining cycle could be operationally useful for adapting a detector during an active deployment.
+A note on the logged time: the HPG run was interrupted twice and resumed, and its summary file records only the last segment (1.96\,h, epochs 32--40). Read on its own, that file would suggest a $2.27\times$ speed-up over the baseline. The per-epoch log (\texttt{results.csv}) shows three segments of 2.57, 4.13 and 1.94\,h, and the 8.65\,h used here is their sum. The HPG is therefore a negative result on this benchmark. Whether hazard priors help in other settings, such as small training sets or thermal imagery, is untested.
 
 \textbf{Scope note.} The D-Fire benchmark used in this section provides bounding boxes for smoke and flame only; it does not include person/survivor annotations. Consequently, the dense-detection results in Table~\ref{tab:dfire_results} cover smoke and fire only, and they come from independently trained detectors, not from the detection heads of the UniAdapFuse architecture (Section~\ref{sec:uniadaptfuse_arch}), whose joint detector records $\mathrm{mAP}_{50}=0.0$ (Section~\ref{sec:uniadaptfuse}). The architecture's ``Survivor RoIs'' detection head is exercised structurally but has not been benchmarked against ground-truth person bounding boxes in this work; a dedicated evaluation on a person-annotated aerial dataset (e.g.\ SARD) is identified as future work.
 
@@ -54,22 +54,22 @@ Figure~\ref{fig:performance_benchmark} places the two evaluation tracks side by 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_03_performance.png}
-\caption{Two evaluation tracks: (A) independently trained D-Fire detectors with class-wise AP and wall-clock training time; (B) scene-classification recovery in the UniAdapFuse v2 prototype after gradient isolation. Numbers beside the bars in (A) give mAP$_{50}$ (\%) and training time. In (B), naive joint training (UniAdapFuse v1) falls to 53.71\% disaster accuracy, and stop-gradient isolation (v2) restores 99.26\% (+45.55\,pp). Panel B does not establish dense-detection quality: our v2 test log records detection $\mathrm{mAP}_{50}=0.0$.}
+\caption{Two evaluation tracks: (A) independently trained D-Fire detectors with class-wise AP and summed wall-clock training time; (B) scene classification, including the UniAdapFuse joint prototype. Numbers beside the bars in (A) give mAP$_{50}$ (\%) and training time. In (B), naive joint training (UniAdapFuse v1) falls to 53.71\% disaster accuracy, and the revised v2 recipe (phased training, stop-gradient isolation and distillation from AdapFuse-v1) restores 99.26\% (+45.55\,pp). Panel B does not establish dense-detection quality: our v2 test log records detection $\mathrm{mAP}_{50}=0.0$.}
 \label{fig:performance_benchmark}
 \end{figure}
 
 \section[Unified Perception Attempt: Classification Recovered, Detection Not]{Unified Perception Attempt: Negative Transfer Resolved for Classification but Not Detection}
 \label{sec:uniadaptfuse}
 
-\noindent\textbf{Summary of finding.} Naive joint training collapses disaster accuracy from 99.44\% to 53.71\%. Phased curriculum training and stop-gradient isolation recover classification to 98.57\% combined macro-F1, close to the standalone classifier (98.74\%), but the same saved checkpoint records a detection $\mathrm{mAP}_{50}$ of 0.0. The joint prototype therefore does not achieve joint perception, and all dense-detection results in this work (Section~\ref{sec:object_detection}) come from independently trained detectors on D-Fire, not from the unified architecture. Our artefacts do not identify the cause of the detection failure; candidate explanations include the small detection loss weight (0.2), the detection-head learning rate, or an error in the detection target or evaluation path, and diagnosing it is left to future work.
+\noindent\textbf{Summary of finding.} Naive joint training reaches only 53.71\% disaster accuracy, against 99.44\% for the classification-only model. A revised recipe (phased curriculum, stop-gradient isolation, distillation from AdapFuse-v1 and other changes) recovers classification to 98.57\% combined macro-F1, close to the standalone classifier (98.74\%), but the same saved checkpoint records a detection $\mathrm{mAP}_{50}$ of 0.0. The joint prototype therefore does not achieve joint perception, and all dense-detection results in this work (Section~\ref{sec:object_detection}) come from independently trained detectors on D-Fire, not from the unified architecture. The training logs point to numerical instability. The trainer silently skips any batch whose total loss is NaN or infinite. In the naive v1 run, 8 of the 17 logged epochs have a recorded training loss and accuracy of exactly zero, meaning every batch was skipped, and in the other epochs the logged training accuracy is computed over very few batches. In v2 only the final epoch (80) is logged, and there every training and validation batch was non-finite, as was the test loss. The collapse of v1 and the zero $\mathrm{mAP}_{50}$ of v2 are therefore at least partly explained by a joint loss that is not finite, not only by negative transfer. Other candidate causes include the small detection loss weight (0.2) or an error in the detection target or evaluation path; diagnosing them is left to future work.
 
 While standalone object detectors provide spatial bounding boxes, they lack global disaster scene context and victim presence estimation. To bridge this gap, \textbf{UniAdapFuse} couples multi-scale visual-thermal Feature Pyramid Networks (FPN) with the tri-modal classification backbone, connected via Top-Down Context Gates (TDCG) and Bottom-Up Spatial Guidance (BUSG)~\cite{perez2018film}.
 
 \subsection{Curriculum Warmup and Stop-Gradient Isolation}
 
-Naive joint training of global scene classification and dense bounding box regression (UniAdapFuse v1) suffers from catastrophic \textit{multi-task negative transfer}: disaster classification accuracy collapses from 99.44\% to 53.71\% because dense regression losses (CIoU and objectness) produce conflicting gradients that corrupt the shared visual backbone. 
+Naive joint training of global scene classification and dense bounding box regression (UniAdapFuse v1) reaches only 53.71\% disaster accuracy, against 99.44\% for the classification-only AdapFuse-v1. Our working hypothesis was \textit{multi-task negative transfer}, in which dense regression losses (CIoU and objectness) disturb the shared visual backbone; as noted above, the log also shows widespread non-finite losses, so the collapse cannot be attributed to negative transfer alone.
 
-UniAdapFuse v2 addresses this conflict on the classification side through three mechanisms: (1) \textit{Phased Curriculum Training}~\cite{bengio2009curriculum} with a 15-epoch classification-only warmup; (2) \textit{Stop-Gradient Isolation} (\texttt{.detach()}) applied to multi-scale pyramid feature maps before feeding the detection neck, ensuring detection gradients cannot backpropagate into the shared backbone; and (3) \textit{Differentiated Learning Rates} ($0.1\times$ backbone, $1.0\times$ classifier/bridge, $0.3\times$ detection head). Table~\ref{tab:uniadaptfuse_results} shows that classification is recovered while detection is not. Note that \texttt{.detach()} blocks detection gradients from reaching the shared backbone only; the detection neck and head still receive their own gradients, so the isolation mechanism by itself does not explain the zero $\mathrm{mAP}_{50}$.
+UniAdapFuse v2 targets the classification side through three mechanisms: (1) \textit{Phased Curriculum Training}~\cite{bengio2009curriculum} with a 15-epoch classification-only warmup; (2) \textit{Stop-Gradient Isolation} (\texttt{.detach()}) applied to multi-scale pyramid feature maps before feeding the detection neck, so that detection gradients cannot backpropagate into the shared backbone; and (3) \textit{Differentiated Learning Rates} ($0.1\times$ backbone, $1.0\times$ classifier/bridge, $0.3\times$ detection head). The same run also distils from the trained AdapFuse-v1 checkpoint, lowers the base learning rate to $5\times10^{-4}$, trains for 80 instead of 50 epochs and reweights the losses. Because the distillation target is the standalone classifier that v2 is compared against, part of the recovery may simply be inherited from the teacher. Table~\ref{tab:uniadaptfuse_results} shows that classification is recovered while detection is not; which of the changes is responsible is not identified. Note that \texttt{.detach()} blocks detection gradients from reaching the shared backbone only; the detection neck and head still receive their own gradients, so the isolation mechanism by itself does not explain the zero $\mathrm{mAP}_{50}$.
 
 \begin{table}[H]
 \centering
@@ -82,7 +82,7 @@ UniAdapFuse v2 addresses this conflict on the classification side through three 
 \midrule
 AdapFuse-v1 (standalone) & Classification only baseline & 0.9913 & 0.9944 & 0.9836 & 0.9884 & 0.9874 & n/a \\
 UniAdapFuse v1 (naive) & Naive Joint End-to-End Training & 0.5669 & 0.5371 & 0.8980 & 0.9306 & 0.7325 & n/a \\
-\textbf{UniAdapFuse v2 (enhanced)} & \textbf{Joint graph + Gradient Isolation} & \textbf{0.9920} & \textbf{0.9926} & \textbf{0.9794} & \textbf{0.9856} & \textbf{0.9857} & \textbf{0.0000} \\
+\textbf{UniAdapFuse v2 (enhanced)} & \textbf{Joint graph + isolation + KD} & \textbf{0.9920} & \textbf{0.9926} & \textbf{0.9794} & \textbf{0.9856} & \textbf{0.9857} & \textbf{0.0000} \\
 \midrule
 \multicolumn{2}{l}{\textit{v2 Classification Recovery Gain over v1}} & \textbf{+42.51 pp} & \textbf{+45.55 pp} & \textbf{+8.14 pp} & \textbf{+5.50 pp} & \textbf{+25.32 pp} & n/a \\
 \bottomrule
@@ -90,7 +90,7 @@ UniAdapFuse v1 (naive) & Naive Joint End-to-End Training & 0.5669 & 0.5371 & 0.8
 }
 \end{table}
 
-UniAdapFuse v2 achieves \textbf{99.20\% disaster F1 and 98.57\% combined F1}, within 0.17 percentage points of the standalone classification reference. This demonstrates recovery of the classification branch after gradient isolation. However, our \texttt{uni\_adaptfuse\_v2\_test\_results.json} reports $\mathrm{mAP}_{50}=0.0$ for detection. Our evidence therefore does not establish usable joint localization or compatibility between the tasks; the independent D-Fire detector results in Section~\ref{sec:object_detection} remain the valid localization benchmark.
+UniAdapFuse v2 achieves \textbf{99.20\% disaster F1 and 98.57\% combined F1}, within 0.17 percentage points of the standalone classification reference, which is also its distillation teacher. This demonstrates recovery of the classification branch under the revised recipe, not the effect of gradient isolation alone. However, our \texttt{uni\_adaptfuse\_v2\_test\_results.json} reports $\mathrm{mAP}_{50}=0.0$ for detection. Our evidence therefore does not establish usable joint localization or compatibility between the tasks; the independent D-Fire detector results in Section~\ref{sec:object_detection} remain the valid localization benchmark.
 
 \section{Multimodal Scene-Prior and Reliability Benchmark (Row-Level Split)}
 \label{sec:classification_benchmark}
@@ -116,7 +116,7 @@ where disaster macro-F1 averages over the four disaster classes and victim macro
 \midrule
 1 & \textbf{AdapFuse-v1 + EfficientNet-B0 (RGB)} & Visual Backbone & 0.0025 & 0.9923 & \textbf{0.9924} & \textbf{0.9924} & 0.9940 & \textbf{0.9947} \\
 2 & \textbf{AdapFuse-v1 + MobileViT-XXS (RGB)} & Visual Backbone & 0.0103 & 0.9881 & 0.9916 & \textbf{0.9899} & 0.9931 & 0.9942 \\
-3 & Baseline A1: RGB-Only & Unimodal Baseline & 0.0054 & 0.9924 & 0.9846 & 0.9885 & \textbf{0.9951} & 0.9891 \\
+3 & Baseline A1: RGB-Only & Unimodal Baseline & 0.0054 & 0.9924 & 0.9846 & 0.9885 & 0.9951 & 0.9891 \\
 4 & AdapFuse-v1 + EfficientNet-B0 (Thermal) & Visual Backbone & 0.0095 & 0.9924 & 0.9837 & 0.9880 & 0.9950 & 0.9886 \\
 5 & Ablation: No RUE (\texttt{ablation\_no\_rue}) & Component Ablation & 0.0094 & \textbf{0.9938} & 0.9812 & 0.9875 & \textbf{0.9957} & 0.9868 \\
 6 & \textbf{AdapFuse-v1 (E): Base Teacher} & Proposed Method & \textbf{0.0020} & 0.9913 & 0.9836 & 0.9874 & 0.9944 & 0.9884 \\
@@ -150,7 +150,7 @@ where disaster macro-F1 averages over the four disaster classes and victim macro
 \subsection{Unimodal Backbone Comparison}
 \label{sec:unimodal_backbones}
 
-To separate the effect of the backbone from the effect of fusion, each single-modality baseline was trained with three backbones: the original A1--A3 encoder and two alternatives. These models were trained through the same AdapFuse-UAV pipeline as the fused models, with the same classifier head, focal loss, balanced training subset, augmentation, synthetic corruption, mixed precision, early stopping and row-level test set ($n=10{,}951$) as Table~\ref{tab:main_results}. Every backbone was therefore trained inside the pipeline twice, once as a unimodal encoder and once as an AdapFuse-v1 encoder, so the two can be compared directly. Tables~\ref{tab:unimodal_rgb}--\ref{tab:unimodal_audio} report one table per modality. To bound training time, the new visual runs used a 12-epoch budget (2 warm-up epochs, cosine schedule, early-stopping patience 5); the original A1--A3 runs used a 50-epoch budget. The comparison therefore favours the original encoders, and every result is a single seed. Dense detection is evaluated on RGB only; those results are in Table~\ref{tab:dfire_results}.
+To separate the effect of the backbone from the effect of fusion, each single-modality baseline was trained with three backbones: the original A1--A3 encoder and two alternatives. These models were trained through the same AdapFuse-UAV pipeline as the fused models, with the same classifier head, focal loss, balanced training subset, augmentation, mixed precision, early stopping and row-level test set ($n=10{,}951$) as Table~\ref{tab:main_results}. Every backbone was therefore trained inside the pipeline twice, once as a unimodal encoder and once as an AdapFuse-v1 encoder, so the two can be compared directly. Tables~\ref{tab:unimodal_rgb}--\ref{tab:unimodal_audio} report one table per modality. To bound training time, the new visual runs used a 12-epoch budget (2 warm-up epochs, cosine schedule, early-stopping patience 5); the original A1--A3 runs used a 50-epoch budget. The comparison therefore favours the original encoders, and every result is a single seed. Dense detection is evaluated on RGB only; those results are in Table~\ref{tab:dfire_results}.
 
 \begin{table}[H]
 \centering
@@ -188,7 +188,7 @@ A2c & MobileViT-XXS (1-ch) & \textbf{1.12M} & 12 / 12 & 0.0117 & 0.9905 & 0.9788
 
 \begin{table}[H]
 \centering
-\caption{Audio-only scene classification with three backbones (log-mel input from label-matched ESC-50 clips; row-level test set). A3b and A3c stopped early (budget 40 epochs) and produced identical test metrics; see text. They are degenerate solutions, not evidence that the backbone improves audio recognition.}
+\caption{Audio-only scene classification with three backbones (log-mel input from label-matched ESC-50 clips; row-level test set, all 10{,}951 rows, of which 47.2\% have no audio and receive an all-zero input). A3b and A3c stopped early (budget 40 epochs) and produced identical test metrics; see text. They are degenerate solutions, not evidence that the backbone improves audio recognition.}
 \label{tab:unimodal_audio}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccccccc@{}}
@@ -196,10 +196,10 @@ A2c & MobileViT-XXS (1-ch) & \textbf{1.12M} & 12 / 12 & 0.0117 & 0.9905 & 0.9788
 \textbf{Model} & \textbf{Backbone} & \textbf{Params} & \textbf{Epochs} & \textbf{Test Loss} & \textbf{Dis.\ F1} & \textbf{Vic.\ F1} & \textbf{Comb.\ F1} & \textbf{Dis.\ Acc} & \textbf{Vic.\ Acc} \\
 \midrule
 A3 & AudioCNN (scratch) & 0.11M & 50 / 50 & \textbf{0.1325} & 0.3820 & 0.4365 & 0.4093 & \textbf{0.7169} & \textbf{0.7746} \\
-A3b & PANNS-CNN6$^\dagger$ & 1.62M & 24 / 40 & 0.2610 & 0.4153 & 0.5777 & 0.4965 & 0.5673 & 0.6163 \\
+A3b & CNN6-style$^\dagger$ & 1.62M & 24 / 40 & 0.2610 & 0.4153 & 0.5777 & 0.4965 & 0.5673 & 0.6163 \\
 A3c & AudioCNN + GDBlock & \textbf{0.07M} & 25 / 40 & 0.2625 & 0.4153 & 0.5777 & 0.4965 & 0.5673 & 0.6163 \\
 \bottomrule
-\multicolumn{10}{@{}l}{\footnotesize $^\dagger$Only 8 of the encoder's 20 weight tensors were loaded from the AudioSet checkpoint; the encoder is partially pretrained.}
+\multicolumn{10}{@{}l}{\footnotesize $^\dagger$Only 8 of the encoder's 20 weight tensors (batch-normalisation parameters) load from the PANNs AudioSet checkpoint; no convolution weights load, so the encoder is effectively trained from scratch.}
 \end{tabular}%
 }
 \end{table}
@@ -208,7 +208,7 @@ A3c & AudioCNN + GDBlock & \textbf{0.07M} & 25 / 40 & 0.2625 & 0.4153 & 0.5777 &
 
 \textbf{Pseudo-thermal.} Changing the backbone matters more here: EfficientNet-B0 raises combined F1 from 97.43\% (ResNet-18) to 98.60\% in 12 epochs, and MobileViT-XXS reaches 98.46\% with one-tenth of ResNet-18's parameters. MobileViT-XXS validation F1 was still rising at epoch 12 (97.28\% at epoch 11), so its score is limited by the training budget. The best pseudo-thermal model remains 0.39 points below the best RGB model, which is expected because the map is computed from the same RGB frame and discards colour.
 
-\textbf{Audio.} Neither alternative encoder learned a useful audio classifier. PANNS-CNN6 and GDBlock produced exactly the same test metrics to every reported digit, their training accuracy plateaued at 55.7\% from the first epochs, and their training loss hardly changed. Two different architectures reaching identical predictions indicates a shared degenerate decision rule that does not depend on audio content. Their higher combined F1 than A3 (49.65\% against 40.93\%) is therefore not an improvement: A3 has higher accuracy on both tasks and a lower test loss. All three audio results reflect label-matched ESC-50 clips that are not synchronised with the visual scene (Section~\ref{sec:backbone_variants}), so they measure that pairing, not UAV acoustic sensing.
+\textbf{Audio.} The audio scores are shaped by the data construction rather than by acoustic recognition. Three facts explain A3. First, 47.2\% of test rows have no audio and receive an all-zero input. Second, no collapse/flood or other-hazard row has audio, so those two classes cannot be recognised from sound, which caps disaster macro-F1. Third, on rows that do have audio, the clip's ESC-50 class encodes the label: fire/smoke rows always receive a ``crackling fire'' clip and clean rows never do (Section~\ref{sec:dataset_sources}). A3's disaster accuracy (71.69\%) matches what a model would score if it were correct on essentially every row with audio and predicted fire/smoke on every silent row (7{,}855 of 10{,}951 rows, 71.73\%), and its victim accuracy (77.46\%) equals the share of no-person rows, so it predicts ``no person'' throughout. The low 38.2\% disaster macro-F1 of A3 therefore does not show that the audio is uninformative; it shows missing inputs, absent classes, and a label shortcut. The two alternative encoders did not even learn that shortcut. The CNN6-style encoder (which loaded no pretrained convolution weights) and GDBlock produced exactly the same test metrics to every reported digit, their training accuracy plateaued at 55.7\% from the first epochs, and their training loss hardly changed, which indicates a shared degenerate decision rule. Their higher combined F1 than A3 (49.65\% against 40.93\%) is therefore not an improvement: A3 has higher accuracy on both tasks and a lower test loss. None of these results measures UAV acoustic sensing.
 
 \begin{table}[H]
 \centering
@@ -230,14 +230,14 @@ ResNet-18 & 1.81 & 11.18 & -- & 97.43 & -- & 98.74 \\
 
 Table~\ref{tab:backbone_accuracy_cost} gives the outcome of the selection in Section~\ref{sec:backbone_selection}. For RGB, the cheapest encoder is within 0.14 points of the best, so MobileNetV3-Small remains a reasonable default at one-fifth of MobileViT-XXS's MACs. For pseudo-thermal, the over-budget ResNet-18 is both the most expensive and the least accurate choice; EfficientNet-B0 is 1.17 points better at 21\% of its MACs, which makes it the better default for that stream.
 
-\textbf{Matched-backbone fusion comparison.} With the backbone held fixed, fusion adds 0.36 combined-F1 points for EfficientNet-B0 on RGB (99.24\% against 98.88\%), nothing for MobileViT-XXS on RGB (98.99\% for both), and 0.20 points for EfficientNet-B0 on the pseudo-thermal stream (98.80\% against 98.60\%). The unimodal runs had a shorter budget (12 epochs against 22, 15 and 7 epochs run for the fused models), so these small gaps do not show that fusion helps; they are consistent with the conclusion above that the fused inputs add little beyond the RGB frame.
+\textbf{Matched-backbone fusion comparison.} With the backbone held fixed, fusion adds 0.36 combined-F1 points for EfficientNet-B0 on RGB (99.24\% against 98.88\%), nothing for MobileViT-XXS on RGB (98.99\% for both), and 0.20 points for EfficientNet-B0 on the pseudo-thermal stream (98.80\% against 98.60\%). The unimodal runs had a shorter budget (12 epochs, against 50-epoch budgets for the three fused models, whose best checkpoints came at epochs 39, 36 and 48), so these small gaps do not show that fusion helps; they are consistent with the conclusion above that the fused inputs add little beyond the RGB frame.
 
 \subsection{Comparison with Published Results on Public Benchmarks}
 \label{sec:public_benchmark_results}
 
-The row-level scores above cannot be compared with published work, because our corpus merges six sources and splits them at random. To obtain comparable numbers, three models were retrained through the same AdapFuse-UAV pipeline under the published protocols of two public datasets (Section~\ref{sec:public_benchmarks_related}): RGB-only MobileNetV3-Small (A1), RGB-only EfficientNet-B0 (A1b) and AdapFuse-v1 with RGB and its derived pseudo-thermal map (audio absent). All used ImageNet-pretrained encoders, focal loss, the same augmentation and synthetic corruption, and model selection on the validation split; each is a single seed.
+The row-level scores above cannot be compared with published work, because our corpus merges six sources and splits them at random. To obtain comparable numbers, three models were retrained through the same AdapFuse-UAV pipeline under the published protocols of two public datasets (Section~\ref{sec:public_benchmarks_related}): RGB-only MobileNetV3-Small (A1), RGB-only EfficientNet-B0 (A1b) and AdapFuse-v1 with RGB and its derived pseudo-thermal map (audio absent). All used ImageNet-pretrained encoders, focal loss, the same augmentation (no synthetic corruption), and model selection on the validation split; each is a single seed.
 
-\textbf{AIDER protocol.} The 6{,}433-image AIDER subset was split per class with exactly the train/validation/test counts of Lee et al.~\cite{lee2023wattefnet} (3{,}207 / 753 / 2{,}473; five classes, 71\% of test images normal). Models trained for up to 30 epochs without resampling.
+\textbf{AIDER protocol.} The 6{,}433-image AIDER subset was split per class with exactly the train/validation/test counts of Lee et al.~\cite{lee2023wattefnet} (3{,}207 / 753 / 2{,}473; five classes, 71\% of test images normal). Lee et al.\ describe this split as 4:1:2, although the listed counts are closer to 5:1:4; we follow the counts. Unlike Lee et al., who under-sample the training and validation sets, our models trained for up to 30 epochs without resampling.
 
 \begin{table}[H]
 \centering
@@ -315,7 +315,7 @@ Avg Reliability: Pseudo-thermal$^\dagger$ & 0.972 & $\approx$1.0 on every row wi
 Avg Reliability: Audio$^\dagger$ & \textbf{0.006}  & $\approx$0.011 on rows with audio; label-matched audio largely ignored \\
 \midrule
 Total Parameters       & 12.94M & Compact multi-branch footprint \\
-Inference Latency (batch=1) & 14.26 ms & 70.1 FPS on workstation RTX 5090 \\
+Inference Latency (batch=1) & 14.32 ms & 69.9 FPS on workstation RTX 5090 \\
 \bottomrule
 \end{tabular}
 
@@ -327,11 +327,11 @@ Inference Latency (batch=1) & 14.26 ms & 70.1 FPS on workstation RTX 5090 \\
 Our evaluation reports a 0.73\% false-positive rate for scene classification on the row-level test split. This is not an operational field false-alarm study and cannot be causally attributed to the NuisanceAwareHead, because our trainer passes \texttt{nuisance\_gt=None} and its nuisance loss is zero.
 
 \textbf{Learned modality gates:}
-The reported averages (audio 0.006, image streams 0.972) include rows whose gate is forced to zero because the modality is missing. Restricted to rows that have each input, the row-level model's RGB and pseudo-thermal gates are saturated at $\approx$1.0 and its audio gate is $\approx$0.011; the RUE is therefore effectively passing both image streams through unchanged and switching audio off. In this run the learned representation largely ignores the label-matched ESC-50 channel, which is the expected outcome: because each clip is paired with visual rows by shared label rather than recorded with them, the audio carries no information about the specific scene beyond what the label already implies. The low audio gate is therefore a consequence of the data construction, not evidence of learned reliability estimation. It is also not a stable property of the architecture: the grouped-split retraining (Section~\ref{sec:grouped_gates}) converges to the opposite audio gate. Likewise, the RGB and pseudo-thermal gates remain essentially constant across all tested corruption severities (Section~\ref{sec:robustness_stress_test}). In our model, the RUE behaves as a learned, largely input-independent feature weighting rather than as a dynamic reliability estimator; corruption-sensitive gating would require training with explicit degradation targets and evaluating gate response against measured degradation, neither of which is present here.
+The reported averages (audio 0.006, image streams 0.972) include rows whose gate is forced to zero because the modality is missing. Restricted to rows that have each input, the row-level model's RGB and pseudo-thermal gates are saturated at $\approx$1.0 and its audio gate is $\approx$0.011; the RUE is therefore effectively passing both image streams through unchanged and switching audio off. In this run the learned representation largely ignores the label-matched ESC-50 channel. The audio carries no information about the specific scene, but it does carry the fire/clean label on rows that have it (Section~\ref{sec:dataset_sources}), so ignoring it is only one of two solutions the data allow; with RGB already near ceiling on this split, the model had little to gain from the shortcut. The low audio gate is therefore a consequence of the data construction and of this training run, not evidence of learned reliability estimation. It is also not a stable property of the architecture: the grouped-split retraining (Section~\ref{sec:grouped_gates}) converges to the opposite audio gate. Likewise, the RGB and pseudo-thermal gates remain essentially constant across all tested corruption severities (Section~\ref{sec:robustness_stress_test}). In our model, the RUE behaves as a learned, largely input-independent feature weighting rather than as a dynamic reliability estimator; corruption-sensitive gating would require training with explicit degradation targets and evaluating gate response against measured degradation, neither of which is present here.
 
 \subsection{Per-Module Latency Breakdown}
 
-Table~\ref{tab:latency_profile} breaks down the 14.26\,ms total inference latency of AdapFuse-v1 by module, measured at batch size 1 on an NVIDIA RTX 5090 (32\,GB VRAM) (establishing the computational efficiency baseline prior to physical embedded edge deployment in future work).
+Table~\ref{tab:latency_profile} breaks down the 14.32\,ms total inference latency of AdapFuse-v1 by module, measured at batch size 1 on an NVIDIA RTX 5090 (32\,GB VRAM) (establishing the computational efficiency baseline prior to physical embedded edge deployment in future work).
 
 \begin{table}[H]
 \centering
@@ -341,22 +341,23 @@ Table~\ref{tab:latency_profile} breaks down the 14.26\,ms total inference latenc
 \toprule
 \textbf{Module} & \textbf{Latency (ms)} & \textbf{\% of Total Pipeline} \\
 \midrule
-RGB Backbone (MobileNetV3-Small) & 6.37 & 44.7\% \\
-Thermal Backbone (ResNet-18)     & 5.17 & 36.3\% \\
+RGB Backbone (MobileNetV3-Small) & 6.37 & 44.5\% \\
+Thermal Backbone (ResNet-18)     & 5.17 & 36.1\% \\
 Audio Backbone (AudioCNN)        & 0.47 &  3.3\% \\
 Feature Projectors (3 streams)   & 0.30 &  2.1\% \\
 Quality Token Heads              & 0.32 &  2.2\% \\
-\textbf{Reliability and Uncertainty Estimator (RUE)} & \textbf{0.85} & \textbf{6.0\%} \\
+\textbf{Reliability and Uncertainty Estimator (RUE)} & \textbf{0.85} & \textbf{5.9\%} \\
 Cross-Modal Attention Layer      & 0.22 &  1.5\% \\
-Temporal GRU Cell                & 0.19 &  1.3\% \\
+Single-step GRU Cell             & 0.19 &  1.3\% \\
 NuisanceAwareHead                & 0.37 &  2.6\% \\
+Unattributed (end-to-end minus module sum) & 0.07 & 0.5\% \\
 \midrule
-\textbf{Total Inference Pipeline} & \textbf{14.26} & \textbf{100.0\%} \\
+\textbf{Total Inference Pipeline (end-to-end)} & \textbf{14.32} & \textbf{100.0\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The feature extractors (RGB, pseudo-thermal, and audio backbones) account for 84.2\% of the measured execution time. The RUE, attention, GRU, and nuisance branch together add 1.63\,ms, with gate computation requiring 0.85\,ms (6.0\%). This profiles implementation overhead on the workstation GPU; it does not establish that the learned gates respond dynamically to degradation.
+The feature extractors (RGB, pseudo-thermal, and audio backbones) account for 83.8\% of the measured execution time. The RUE, attention, GRU, and nuisance branch together add 1.63\,ms, with gate computation requiring 0.85\,ms (5.9\%). At batch size 1 on a large GPU, latency is dominated by the number of sequential kernel launches rather than by arithmetic, which is why MobileNetV3-Small (0.06\,GMACs, many small layers) takes longer than ResNet-18 (1.81\,GMACs) and why a small MLP such as the RUE costs 0.85\,ms; these timings therefore do not transfer to an embedded accelerator. A separate end-to-end measurement in our evaluation script gave 12.10\,ms, so run-to-run variation is of the order of 2\,ms. This profiles implementation overhead on the workstation GPU; it does not establish that the learned gates respond dynamically to degradation.
 
 \textbf{Measurement scope.} All latency figures in this section were measured on an NVIDIA RTX 5090 workstation GPU (32\,GB VRAM), whose power draw far exceeds the $\leq$15\,W embedded payload targeted in Section~\ref{sec:tech_requirements}. They are not estimates of on-board UAV latency or power. Latency, power and thermal behaviour on an embedded accelerator, with and without INT8 quantisation, have not been measured and remain future work.
 
@@ -405,7 +406,7 @@ The row-level figures reported elsewhere in this chapter should still be read as
 
 The grouped run's saved per-row predictions (\texttt{test\_predictions.csv}) also record the three RUE gates, and they differ sharply from the row-level model. Joining them with the modality-presence flags of the grouped test metadata gives the following picture. Gates for missing modalities are exactly zero in both runs, as the model's presence mask requires.
 \begin{itemize}
-    \item \textbf{Audio:} the gate is 1.000 on all 5{,}982 test rows that have an audio clip, whereas the row-level model's audio gate is $\approx$0.011 on rows with audio. The two runs therefore learned opposite treatments of the same label-matched channel.
+    \item \textbf{Audio:} the gate is 1.000 on all 5{,}982 test rows that have an audio clip, whereas the row-level model's audio gate is $\approx$0.011 on rows with audio. The two runs therefore learned opposite treatments of the same label-matched channel. Because the audio clip class encodes the fire/clean label in the grouped split as well (every fire/smoke row with audio has a ``crackling fire'' clip, every clean row does not), the open audio gate is consistent with the grouped model exploiting that shortcut.
     \item \textbf{Pseudo-thermal:} on the 10{,}697 rows that have a pseudo-thermal map, the gate is bimodal (above 0.99 on 53.8\% of rows and below 0.01 on 43.5\%) and is switched off on 59.7\% of FLAME rows but only 1.4\% of C2A rows. In the excluded seed~41 run the pseudo-thermal gate is zero on every row.
     \item \textbf{RGB:} the gate is above 0.99 on 93.7\% of rows with RGB, close to the saturated behaviour of the row-level model.
 \end{itemize}
@@ -440,9 +441,9 @@ FireNet  &     90  & 1 only  & 0 only & 0.8222 & 0.6000 & 0.2256 & 0.3750 & 0.90
 }
 \end{table}
 
-\textbf{The low saved per-source F1 values are a metric artefact, not evidence of poor within-source performance.} Read at face value, the ``Saved F1'' columns (0.30--0.57 combined) suggest that no source is classified well. That reading is incorrect. Five of the six sources contain a single victim class, and SARD and FireNet contain a single disaster class; because the evaluation script averages over all label values, every absent class contributes zero, so even a perfect classifier would score at most 0.50 victim macro-F1 on FLAME or SARD. The accuracies and present-class F1 values show that within-source classification is in fact reasonable (disaster accuracy 0.82--0.998). A pooled macro-F1 above every per-source macro-F1 is therefore expected under this computation and is not, by itself, a signature of shortcut learning.
+\textbf{The low saved per-source F1 values are a metric artefact, not evidence of poor within-source performance.} Read at face value, the ``Saved F1'' columns (0.30--0.56 combined) suggest that no source is classified well. That reading is incorrect. All six sources contain a single victim class, and SARD and FireNet contain a single disaster class; because the evaluation script averages over all label values, every absent class contributes zero, so even a perfect classifier would score at most 0.50 victim macro-F1 on FLAME or SARD. The accuracies and present-class F1 values show that within-source classification is in fact reasonable (disaster accuracy 0.82--0.998). A pooled macro-F1 above every per-source macro-F1 is therefore expected under this computation and is not, by itself, a signature of shortcut learning.
 
-\textbf{The real confound lies in the label distribution itself.} The ``Classes present'' columns show that source identity and label are strongly entangled in the assembled corpus. Victim presence is fully determined by source in the grouped test set: every C2A and SARD row is labelled person-visible and every AIDER, FLAME, ESC-50 and FireNet row is labelled no-person. SARD is entirely \emph{clean}, FireNet entirely \emph{fire}, and C2A supplies the collapse/flood and other-hazard classes. A classifier can therefore reach high pooled scores, particularly on the victim task, by recognising which dataset a frame came from (resolution, compression, colour statistics, altitude) rather than by detecting a person or hazard. The present experiments cannot separate these two explanations: single-class sources give no within-source test of discrimination at all, so the victim-presence scores in particular cannot be read as evidence of person detection.
+\textbf{The real confound lies in the label distribution itself.} The ``Classes present'' columns show that source identity and label are strongly entangled in the assembled corpus. Victim presence is fully determined by source in the grouped test set: every C2A and SARD row is labelled person-visible and every AIDER, FLAME, ESC-50 and FireNet row is labelled no-person. SARD is entirely \emph{clean}, FireNet entirely \emph{fire}, and C2A supplies most of the collapse/flood and other-hazard rows. C2A images are themselves synthetic composites in which human figures are overlaid on UAV disaster scenes~\cite{nihal2024c2a}, so its person-visible label marks pasted figures, a further route by which the victim task can be solved from image statistics rather than from real survivors. The AIDER victim accuracy of only 57.2\% in Table~\ref{tab:grouped_per_source}, where the model predicts a person on many person-free AIDER scenes, is consistent with the model associating disaster scene appearance with C2A and hence with the victim label. A classifier can therefore reach high pooled scores, particularly on the victim task, by recognising which dataset a frame came from (resolution, compression, colour statistics, altitude) rather than by detecting a person or hazard. The present experiments cannot separate these two explanations: single-class sources give no within-source test of discrimination at all, so the victim-presence scores in particular cannot be read as evidence of person detection.
 
 Two consequences follow. First, neither the row-level nor the grouped aggregate should be read as validated hazard- or person-discrimination accuracy for a UAV flying a new scene. Second, the confound is a property of the assembled corpus rather than of the fusion architecture, and it applies equally to all twenty-six configurations in Table~\ref{tab:main_results}. Separating the two explanations requires sources that contain both values of each label (for example, person-present and person-absent frames from the same flights), source-balanced class sampling, or leave-one-source-out evaluation.
 
@@ -474,13 +475,13 @@ Figure~\ref{fig:robustness_qualitative} grounds the aggregate sweep in one real 
     \item \textbf{Pseudo-thermal drift:} Macro-F1 remains 0.9880 at severity 5, while the pseudo-thermal gate remains near 0.9721. This is a sensitivity result for transformed derived maps, not a radiometric sensor-drift experiment.
     \item \textbf{Motion blur:} Macro-F1 remains 0.9859 at severity 5, a 0.54\,pp decline from the clean 0.9913 baseline.
     \item \textbf{Low light:} Macro-F1 remains 0.9817 at severity 5, the second-largest decline after the smoke overlay.
-    \item \textbf{Audio-noise transform:} Macro-F1 remains 0.9858 at severity 5. The audio gate is already near 0.006 before corruption and changes negligibly, consistent with the model largely ignoring this label-matched channel.
+    \item \textbf{Audio-noise transform:} Macro-F1 remains 0.9858 at severity 5. The audio gate is already near 0.006 before corruption and changes negligibly, consistent with this model largely ignoring the audio channel, so the sweep says little about robustness to acoustic noise.
 \end{enumerate}
 
 \section{Component-Wise Ablation Study of the AdapFuse-v1 Architecture}
 \label{sec:component_ablations}
 
-Five single-component variants were trained on the same row-level split and evaluated on the held-out test set ($n=10{,}951$). Table~\ref{tab:ablation_results} reports their descriptive differences from our base run. Because the repository does not contain repeated seeds or confidence intervals, these comparisons indicate associations rather than causal component effects.
+Five single-component variants were trained on the same row-level split and evaluated on the held-out test set ($n=10{,}951$). Table~\ref{tab:ablation_results} reports their descriptive differences from our base run. Because the repository does not contain repeated seeds or confidence intervals, these comparisons indicate associations rather than causal component effects. Two further facts limit them. First, the base run's logged learning rate cycles with a period of about eight epochs, whereas all five variants follow the configured single cosine decay (Table~\ref{tab:training}), so each comparison also changes the schedule. Second, removing the nuisance head changes no training signal, because its loss is already zero in the base run; \texttt{ablation\_no\_nuisance} is therefore effectively a re-run of the base model, and its 4.6$\times$ higher test loss with a $-0.02$\,pp change in combined F1 indicates the scale of run-to-run variation. Differences of a few tenths of a point, and loss ratios of 4--5$\times$, are within what this comparison can produce without any component effect.
 
 \begin{table}[H]
 \centering
@@ -506,14 +507,14 @@ Five single-component variants were trained on the same row-level split and eval
 \textbf{1. Single-Step GRU Refinement Changes the Learned Representation.}
 Removing the GRU block (\texttt{ablation\_no\_gru}) corresponds to the largest difference in this suite: Combined F1 is 0.60 percentage points lower and victim-presence F1 is 0.71 points lower, while test loss is 5.1$\times$ higher. However, the implementation invokes the GRU with sequence length one (\texttt{fused.unsqueeze(1)}) and no carried-over hidden state, so each sample starts from a zero state and no information passes between frames. It therefore acts as a gated nonlinear refinement layer in these experiments; the result is not evidence of temporal smoothing, vibration invariance, or robustness across successive frames.
 
-\textbf{2. Modality-Token Attention Outperforms Mean Pooling in This Run.}
+\textbf{2. The Attention Run Scores Slightly Above the Mean-Pooling Run.}
 Replacing the 4-head attention block with token mean pooling (\texttt{ablation\_no\_attention}) corresponds to 0.35 percentage points lower combined F1 and 0.51 points lower victim-presence F1, with a 3.8$\times$ higher loss. The attention operates over three globally pooled modality tokens, not localized spatial patches. Moreover, the pseudo-thermal token is derived from the RGB image, so this experiment supports learned modality-level interaction but not independent RGB--thermal spatial correspondence.
 
 \textbf{3. Learned Quality Features Are Associated with Lower Test Loss.}
 Removing the dedicated 16-dimensional quality heads (\texttt{ablation\_no\_quality\_tokens}) corresponds to a 0.34-point lower combined F1 and a test loss of 0.0108 (5.4$\times$ the base run). This shows that the learned quality features are useful within the fitted architecture, but it does not establish calibrated uncertainty or detection of physical sensor degradation because no degradation targets are supplied during training.
 
 \textbf{4. The Nuisance Variant Does Not Establish Nuisance Supervision.}
-The no-nuisance run has a 4.6$\times$ higher loss but nearly unchanged combined F1. In our trainer, \texttt{nuisance\_gt=None}, so the base model's nuisance loss is also zero. The difference between these saved runs cannot therefore be interpreted as evidence that an auxiliary nuisance objective regularizes false-alarm features; repeated controlled runs with nuisance labels are required.
+The no-nuisance run has a 4.6$\times$ higher loss but nearly unchanged combined F1. In our trainer, \texttt{nuisance\_gt=None}, so the base model's nuisance loss is also zero and the two runs differ only in the (unused) head, the random initialisation and the learning-rate schedule. The difference between these saved runs cannot therefore be interpreted as evidence that an auxiliary nuisance objective regularizes false-alarm features; it is better read as a measure of run-to-run noise, and repeated controlled runs with nuisance labels are required.
 
 \section{Backbone Exploration and Architectural Augmentations}
 \label{sec:backbone_variants}
@@ -526,8 +527,8 @@ The no-nuisance run has a 4.6$\times$ higher loss but nearly unchanged combined 
 \end{itemize}
 The RGB-only and pseudo-thermal-only versions of these backbones are reported in Tables~\ref{tab:unimodal_rgb} and~\ref{tab:unimodal_thermal}; with the backbone held fixed, the fused models score between 0.00 and 0.36 combined-F1 points higher.
 
-\subsection{Acoustic Backbone Variants: GDBlock vs.\ Pretrained PANNS}
-Experiments comparing acoustic encoders (Table~\ref{tab:main_results}, Ranks 10, 16, 20) show that the multi-scale dilated \textbf{GDBlock} architecture reaches \textbf{98.63\% Combined F1} (0.0036 loss), while \textbf{PANNS-CNN6}~\cite{kong2020panns} reaches \textbf{98.25\%} (0.0038 loss). Because ESC-50 clips are reused and label-matched rather than synchronized to the visual scene, these results are most directly evidence of an alignment bottleneck; they are not an experiment with measured UAV rotor noise. With the audio gate near zero, the 0.38-point gap between the two backbones mostly reflects how the rest of the network trains alongside each encoder, not the quality of disaster-relevant acoustic features, and neither result demonstrates audio--visual fusion. Trained alone (Table~\ref{tab:unimodal_audio}), both encoders reach the same degenerate solution, which confirms that their fused scores come from the visual streams.
+\subsection{Acoustic Backbone Variants: GDBlock vs.\ CNN6-style Encoder}
+Experiments comparing acoustic encoders (Table~\ref{tab:main_results}, Ranks 10, 16, 20) show that the multi-scale dilated \textbf{GDBlock} architecture reaches \textbf{98.63\% Combined F1} (0.0036 loss), while the \textbf{CNN6-style encoder} (``PANNS'' in the table) reaches \textbf{98.25\%} (0.0038 loss). The latter loaded no AudioSet convolution weights (Section~\ref{sec:backbone_selection}), so these runs do not test pretrained audio transfer, and because the ESC-50 clips are label-matched rather than synchronized to the visual scene, they are not an experiment with measured UAV rotor noise either. With the audio gate near zero, the 0.38-point gap between the two backbones mostly reflects how the rest of the network trains alongside each encoder, not the quality of disaster-relevant acoustic features, and neither result demonstrates audio--visual fusion. Trained alone (Table~\ref{tab:unimodal_audio}), both encoders reach the same degenerate solution, which suggests that their fused scores come mainly from the visual streams.
 
 \subsection{Two-Sensor Subset Deployments}
 \label{sec:two_sensor}
@@ -544,7 +545,7 @@ The near-ceiling aggregate metrics reported in Table~\ref{tab:main_results} can 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_13_failure_gallery.png}
-\caption{Real misclassifications from re-running trained checkpoints on the natural-distribution test set. Panel titles give true $\rightarrow$ predicted class (confidence). Top row: AdapFuse-v1 errors are rare (8 found across 1{,}280 sampled test rows, consistent with its 99.44\% disaster accuracy) and concentrate on visually ambiguous clean-vs-collapse scenes (e.g.\ dense urban/structural clutter mistaken for collapse debris). Bottom row: the audio-only baseline (A3, 38.2\% disaster F1) fails much more frequently (121 errors in a smaller sample), consistently defaulting to a Fire/Smoke prediction regardless of true class, which is direct visual evidence for the audio-signal-quality bottleneck discussed throughout this chapter.}
+\caption{Real misclassifications from re-running trained checkpoints on the natural-distribution test set. Panel titles give true $\rightarrow$ predicted class (confidence). Top row: AdapFuse-v1 errors are rare (8 found across 1{,}280 sampled test rows, consistent with its 99.44\% disaster accuracy) and concentrate on visually ambiguous clean-vs-collapse scenes (e.g.\ dense urban/structural clutter mistaken for collapse debris). Bottom row: the audio-only baseline (A3, 38.2\% disaster F1) fails much more frequently (121 errors in a smaller sample) and defaults to a Fire/Smoke prediction. This is the expected output on rows without audio, which receive an all-zero input; it reflects missing and label-matched audio (Section~\ref{sec:unimodal_backbones}), not the acoustic quality of the clips.}
 \label{fig:failure_gallery}
 \end{figure}
 
@@ -552,14 +553,15 @@ The near-ceiling aggregate metrics reported in Table~\ref{tab:main_results} can 
 
 \begin{enumerate}
     \item \textbf{Dense Object Detection Benchmark:} High-capacity YOLO26s (CLAHE) achieves $77.10\%\, \text{mAP}_{50}$ on D-Fire, while RT-DETRv2-R18 reaches $73.80\%$ and YOLO11n attains $72.25\%$.
-    \item \textbf{HPG Efficiency--Accuracy Trade-off:} Hazard-YOLO26n reaches $70.53\%\, \text{mAP}_{50}$ in $1.96\,\text{hours}$ versus $71.47\%$ in 4.45 hours for baseline YOLO26n. The shorter saved run is useful evidence of lower training cost, but not a controlled proof of faster convergence.
-    \item \textbf{Multi-Task Prototype:} Curriculum warmup and stop-gradient isolation recover scene classification to $99.26\%$ disaster accuracy and $98.57\%$ combined F1. The same saved evaluation reports detection $\text{mAP}_{50}=0.0$, so successful joint localization is not established.
+    \item \textbf{HPG Is a Negative Result:} Hazard-YOLO26n reaches $70.53\%\, \text{mAP}_{50}$ in 8.65 hours versus $71.47\%$ in 4.45 hours for baseline YOLO26n under the same 40-epoch recipe, and its validation curve tracks the baseline's.
+    \item \textbf{Multi-Task Prototype:} A revised recipe (curriculum warmup, stop-gradient isolation, distillation from AdapFuse-v1 and other changes) recovers scene classification to $99.26\%$ disaster accuracy and $98.57\%$ combined F1; the contribution of each change is not identified. The same saved evaluation reports detection $\text{mAP}_{50}=0.0$, and the logs show widespread non-finite losses in both joint runs, so successful joint localization is not established.
     \item \textbf{Fusion versus RGB-only:} On the row-level split, AdapFuse-v1 (98.74\% combined F1) does not exceed the RGB-only baseline (98.85\%), and the no-RUE variant (98.75\%) matches it; the fused inputs are RGB-derived or label-matched, so no fusion accuracy gain is shown.
-    \item \textbf{Unimodal Backbones:} With three backbones per modality, the best RGB-only model (MobileViT-XXS, 98.99\%) matches the best-but-one fused model, and the best pseudo-thermal-only model (EfficientNet-B0, 98.60\%) improves on ResNet-18 by 1.17 points. With the backbone held fixed, fusion adds 0.00--0.36 points. PANNS-CNN6 and GDBlock audio-only runs collapse to identical degenerate predictions.
+    \item \textbf{Unimodal Backbones:} With three backbones per modality, the best RGB-only model (MobileViT-XXS, 98.99\%) matches the best-but-one fused model, and the best pseudo-thermal-only model (EfficientNet-B0, 98.60\%) improves on ResNet-18 by 1.17 points. With the backbone held fixed, fusion adds 0.00--0.36 points. The CNN6-style and GDBlock audio-only runs collapse to identical degenerate predictions.
+    \item \textbf{Audio Label Leak:} On every row that has audio, the ESC-50 clip class identifies fire/smoke versus clean, and only these two classes have audio. The low audio-only macro-F1 reflects missing audio and absent classes, not uninformative audio, and any fused model can use the clip as a label shortcut.
     \item \textbf{Public Benchmarks:} Under the published AIDER 4:1:2 protocol, RGB-only EfficientNet-B0 reaches 94.00\% macro-F1 against 88.5\% for WATT-EffNet (trained from scratch). Under the official cross-camera FLAME protocol it reaches 83.72\% accuracy against 76.23\% for Xception, while in-domain validation F1 is 99.9\% for every model. AdapFuse-v1 is below RGB-only EfficientNet-B0 on both.
-    \item \textbf{Component Variants:} The base run outperforms the no-GRU, no-attention, and no-quality-feature runs by 0.60, 0.35, and 0.34 F1 points, respectively. These single-run differences are descriptive; the GRU receives one step, reliability has no degradation targets, and the nuisance loss is zero.
+    \item \textbf{Component Variants:} The base run outperforms the no-GRU, no-attention, and no-quality-feature runs by 0.60, 0.35, and 0.34 F1 points, respectively. These single-run differences are descriptive and of the same order as the run-to-run noise shown by the no-nuisance re-run; the variants also used a different learning-rate schedule from the base run, the GRU receives one step, reliability has no degradation targets, and the nuisance loss is zero.
     \item \textbf{Scene-Level Backbone Results:} EfficientNet-B0 reaches $99.24\%$ Combined F1 and MobileViT-XXS reaches $98.99\%$ on the row-level split. These results concern victim presence, not person localization.
-    \item \textbf{Row-Level Error and Workstation Speed:} AdapFuse-v1 reports 0.73\% row-level scene-classification FPR, ECE 0.0337, and 14.26\,ms inference on an RTX 5090 workstation (32\,GB VRAM). Neither operational false-alarm reduction nor embedded-UAV speed has been validated.
+    \item \textbf{Row-Level Error and Workstation Speed:} AdapFuse-v1 reports 0.73\% row-level scene-classification FPR, ECE 0.0337, and 14.32\,ms inference on an RTX 5090 workstation (32\,GB VRAM). Neither operational false-alarm reduction nor embedded-UAV speed has been validated.
     \item \textbf{Split and Source Effects:} Under a capture-group-aware split, combined macro-F1 falls from 98.74\% to 89.14\% (single seed). Victim presence is fully determined by source dataset in the grouped test set, so aggregate scores cannot separate person or hazard recognition from dataset recognition.
     \item \textbf{Reliability Gates:} In the row-level model the RGB and pseudo-thermal gates are saturated at $\approx$1.0 and the audio gate at $\approx$0.011 on rows with each input, unchanged under every synthetic corruption; the grouped retraining instead saturates the audio gate at 1.0 and switches pseudo-thermal off on 43.5\% of rows. The gates act as run-dependent on/off switches, and the RUE is not shown to track degradation.
 \end{enumerate}

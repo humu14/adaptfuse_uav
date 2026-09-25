@@ -289,7 +289,10 @@ def generate_fig_03_performance():
         "YOLOv10n",
     ]
     map50 = [77.10, 73.80, 72.58, 72.25, 71.47, 70.53, 67.75]
-    train_hrs = [42.6, 7.85, 4.28, 4.60, 4.45, 1.96, 5.07]
+    # Hazard-YOLO26n: sum of three resumed segments in results.csv
+    # (2.57 h + 4.13 h + 1.94 h); the summary JSON's 1.96 h is the last segment only.
+    # YOLO26n (CLAHE FT) is fine-tuned from the YOLO26n run, so its time is additional.
+    train_hrs = [42.6, 7.85, 4.28, 4.60, 4.45, 8.65, 5.07]
     smoke_ap = [84.85, 81.20, 79.64, 79.10, 78.33, 78.12, 75.28]
     fire_ap  = [69.36, 66.40, 65.51, 65.40, 64.60, 62.94, 60.23]
 

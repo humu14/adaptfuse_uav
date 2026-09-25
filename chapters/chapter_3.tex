@@ -47,9 +47,9 @@ The system shall perform three primary functions that together constitute the di
 
 \section{Societal Impact}
 
-The proposed framework targets measurable improvements in disaster response outcomes by enabling faster, more reliable detection from UAV platforms. Early wildfire detection reduces spread area by 40--60\% and economic damage by up to 75\%~\cite{merino2012unmanned}. In USAR contexts, survival probability decreases sharply with elapsed time: rescue operations within 24 hours yield $\sim$90\% victim survival, compared to $\sim$25\% after 72 hours~\cite{erdelj2017help}. Sub-500 ms onboard inference directly targets these critical time windows.
+The proposed framework aims to improve disaster response by enabling faster and more reliable detection from UAV platforms. A wildfire detected early can be engaged while it is still small~\cite{merino2012unmanned}, and in USAR operations the chance of rescuing survivors falls with elapsed time~\cite{erdelj2017help}. Sub-500 ms onboard inference is set as a target so that detection does not become the bottleneck in these time windows.
 
-Reliable automated detection also reduces the burden on emergency dispatch infrastructure. Current RGB-only fire detection systems generate 12--18\% false positive rates, causing hundreds of unnecessary dispatches per year in monitored regions. Each unnecessary deployment consumes personnel time, fuel, and response capacity elsewhere. Reducing false positives to $\leq$8\% in the field would translate to saved resources and improved operator trust; the 0.73\% false-positive rate reported in Chapter~5 is a row-level test statistic, not an operational field rate.
+Reliable automated detection could also reduce the burden on emergency dispatch infrastructure. False alarms from automated fire detectors lead to unnecessary dispatches, and each one consumes personnel time, fuel, and response capacity elsewhere. Reducing false positives to $\leq$8\% in the field (our target) would save resources and improve operator trust; the 0.73\% false-positive rate reported in Chapter~5 is a row-level test statistic, not an operational field rate.
 
 The framework also benefits remote and underserved communities where ground-based sensor networks are economically infeasible and satellite revisit cycles (5--16 days) are insufficient for active disaster monitoring.
 
@@ -59,9 +59,9 @@ This section considers both the positive environmental effects of earlier disast
 
 \textbf{Positive environmental effects:} Earlier wildfire detection limits uncontrolled burn area and associated carbon emissions. A fire detected 30 minutes earlier than conventional methods can be engaged while it is still small, limiting the area burned before suppression begins, with commensurate reductions in CO$_2$, particulate matter, and volatile organic compound emissions.
 
-\textbf{Energy considerations:} The planned onboard edge-compute module (target $\leq$10--15 W) would consume substantially less energy than cloud-inference pipelines that require continuous high-bandwidth uplink. INT8 quantised inference reduces compute energy per frame by approximately 4$\times$ relative to FP32, extending UAV flight time by an estimated 8--12\%.
+\textbf{Energy considerations:} The planned onboard edge-compute module (target $\leq$10--15 W) would avoid the continuous high-bandwidth uplink that cloud inference requires. INT8 quantised inference is expected to lower compute energy per frame relative to FP32, but quantisation was not implemented in this work, so neither the energy saving nor its effect on flight time was measured.
 
-\textbf{Manufacturing impact:} The sensor payload (RGB camera, thermal module, microphone array, edge compute module) adds approximately 600--900 g to UAV payload. This manufacturing footprint is offset across repeated operational deployments over the system lifetime.
+\textbf{Manufacturing impact:} The sensor payload (RGB camera, thermal module, microphone array, edge compute module) is estimated to add 600--900 g to the UAV payload. This manufacturing footprint is offset across repeated operational deployments over the system lifetime.
 
 \section{Ethical Issues}
 
@@ -77,7 +77,7 @@ Deploying UAV-based detection systems in populated and disaster-affected areas r
 
 \section{Standards}
 
-The system design conforms to the following applicable standards, ensuring compatibility with existing emergency management infrastructure and regulatory frameworks.
+A deployable version of the system would need to address the following standards. The research prototype has not been assessed for conformance with any of them; they are listed to scope future engineering work.
 
 \begin{itemize}
     \item \textbf{IEEE 1512:} Standard for Common Incident Management Message Sets for Emergency Management Centers; governs detection output data formats
@@ -124,7 +124,7 @@ Risk management is essential for a project that combines hardware integration, n
 \midrule
 Dataset class imbalance & High & High & Focal Loss; oversampling; synthetic augmentation \\
 Latency target not met post-quantisation & Medium & High & QAT from training start; structured pruning fallback \\
-Rotor noise rendering audio unusable & Medium & Medium & Spectral subtraction; treat audio as optional; ablation without audio. \textit{Risk materialised}: audio-only F1 = 38.2\%; PANNS backbone experiment points to a data-alignment bottleneck \\
+Rotor noise rendering audio unusable & Medium & Medium & Spectral subtraction; treat audio as optional; ablation without audio. \textit{Risk materialised}: no real UAV audio was available; the label-matched ESC-50 audio leaks the fire/clean label (Section~\ref{sec:unimodal_backbones}) \\
 Domain shift between synthetic and real data & High & Medium & Domain randomisation; held-out real-world test set \\
 Thermal false positives from solar heating & Medium & Medium & Time-of-day conditioning; joint RGB+thermal decision boundary \\
 Compute hardware failure & Low & High & Cloud training backup; checkpoints every 5 epochs \\
@@ -134,9 +134,9 @@ Compute hardware failure & Low & High & Cloud training backup; checkpoints every
 
 \section{Economic Analysis}
 
-A cost analysis based on the assumptions below suggests that the UniAdapFuse system could offer a favourable return on investment relative to existing disaster monitoring infrastructure.
+The following illustrative cost analysis rests on the stated assumptions rather than on field data; it indicates that a UAV-based system could offer a favourable return on investment relative to fixed monitoring infrastructure.
 
-\textbf{Development costs:} Estimated compute time amounts to 120 GPU-hours on the available training workstation (at cloud-equivalent rates of $\sim$\$0.30/hour), plus dataset storage (\$50/month). Total estimated development compute cost: \$300--\$500.
+\textbf{Development costs:} The saved training logs account for roughly 390 GPU-hours (about 280 for classification and 110 for detection); this is a lower bound because some resumed runs kept only part of their history. At assumed cloud-equivalent rates of \$0.30--\$0.90 per GPU-hour, this is about \$120--\$350 of compute, plus dataset storage (\$50/month).
 
 \textbf{Deployment cost per UAV:} Sensor payload (thermal \$800--\$2,000; RGB camera \$300; microphone array \$50; edge compute module \$400) totals \$1,550--\$2,750. The medium-class UAV platform (\$8,000--\$15,000) is the dominant cost. Compared to fixed ground sensor networks (\$50,000--\$200,000 per installation), UAV-based deployment provides substantially better cost-per-covered-area for active disaster monitoring.
 

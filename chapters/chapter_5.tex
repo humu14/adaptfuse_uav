@@ -16,6 +16,7 @@ The proposed methodology follows four phases: (1) multimodal dataset curation fr
 \section{Dataset Curation}
 
 \subsection{Sources and Composition}
+\label{sec:dataset_sources}
 
 Because no single public dataset provides synchronized RGB, thermal, and audio for UAV disaster detection, the dataset was assembled from six public sources and unified under a structured metadata catalogue. Table~\ref{tab:dataset_sources} lists each source, the disaster scenario it covers, and its contribution.
 
@@ -29,10 +30,10 @@ Because no single public dataset provides synchronized RGB, thermal, and audio f
 \textbf{Source} & \textbf{Scenario} & \textbf{Modalities} & \textbf{Samples} & \textbf{Notes} \\
 \midrule
 FLAME~\cite{shamsoshoara2021aerial}      & Wildfire                  & RGB + derived map & 47{,}992 & Aerial UAV RGB footage; pseudo-thermal paths are derived from RGB. Largest source. \\
-C2A~\cite{nihal2024c2a}                  & Crowd / victim            & RGB            & 10{,}215 & Aerial human-detection dataset for disaster scenarios; victim labels from annotations \\
-AIDER~\cite{kyrkou2019aider}             & Multi-disaster (fire, flood, collapse, normal) & RGB & 6{,}433 & Benchmark for aerial disaster scene classification \\
+C2A~\cite{nihal2024c2a}                  & Crowd / victim            & RGB            & 10{,}215 & Synthetic composites: human poses overlaid on UAV disaster scenes; every row victim-positive \\
+AIDER~\cite{kyrkou2019aider}             & Multi-disaster (fire, flood, collapse, traffic, normal) & RGB & 6{,}433 & Benchmark for aerial disaster scene classification \\
 SARD~\cite{sambolek2021sard}             & Victim (person visible)   & RGB            & 5{,}755  & Aerial person search dataset; victim\_label=1 per sample \\
-ESC-50~\cite{piczak2015esc}             & Audio events              & Audio          & 2{,}000  & Environmental clips reused across 39{,}003 assigned metadata rows; label-matched, not synchronized \\
+ESC-50~\cite{piczak2015esc}             & Audio events              & Audio          & 2{,}000  & Audio-only rows; clips also reused across 39{,}003 assigned metadata rows; label-matched, not synchronized \\
 FireNet~\cite{jadon2019firenet}          & Wildfire                  & RGB            & 602      & Video frames; additional fire/no-fire RGB samples \\
 \midrule
 \textbf{Total unique} & & & \textbf{72{,}997} & Raw: Train 51{,}097 / Val 10{,}949 / Test 10{,}951 \\
@@ -44,9 +45,9 @@ FireNet~\cite{jadon2019firenet}          & Wildfire                  & RGB      
 
 \textbf{Label schema:} Each sample carries two independent labels. The \textit{disaster label} takes values 0 (clean), 1 (fire/smoke), 2 (structural collapse or flood), or 3 (other hazard). The \textit{victim label} takes values 0 (no person visible) or 1 (person visible).
 
-\textbf{Modality availability:} Not all sources supply all three inputs. Each row carries three Boolean presence flags (RGB, pseudo-thermal, and audio). Missing inputs are zero-filled and the corresponding flag is cleared. Recomputing the metadata shows 70{,}997 RGB paths and 70{,}997 pseudo-thermal paths, with every thermal path under the RGB-derived \texttt{pseudo\_thermal} tree and no sensor-IR path. Audio is available in 39{,}003 rows but draws from only 2{,}000 unique ESC-50 files, assigned by label rather than capture time. In the test set, 10{,}646 of 10{,}951 rows (97.2\%) have RGB and pseudo-thermal, while 5{,}781 (52.8\%) have an assigned audio clip. Nearly half of the test rows are therefore evaluated without any audio input, and every aggregate test score mixes rows with and without audio.
+\textbf{Modality availability:} Not all sources supply all three inputs. Each row carries three Boolean presence flags (RGB, pseudo-thermal, and audio). Missing inputs are zero-filled and the corresponding flag is cleared. Recomputing the metadata shows 70{,}997 RGB paths and 70{,}997 pseudo-thermal paths, with every thermal path under the RGB-derived \texttt{pseudo\_thermal} tree and no sensor-IR path. Audio is available in 39{,}003 rows but draws from only 2{,}000 unique ESC-50 files, assigned by label rather than capture time. Audio exists only for clean (0) and fire/smoke (1) rows: all 20{,}433 fire/smoke rows with audio share the 40 clips of the ESC-50 ``crackling fire'' class, and all 18{,}570 clean rows with audio draw from the other 1{,}960 clips. The 2{,}000 ESC-50 rows themselves have no image and are the difference between the 72{,}997 rows and the 70{,}997 image paths. In the test set, 10{,}646 of 10{,}951 rows (97.2\%) have RGB and pseudo-thermal, while 5{,}781 (52.8\%) have an assigned audio clip. Nearly half of the test rows are therefore evaluated without any audio input, and every aggregate test score mixes rows with and without audio.
 
-\textbf{Consequences of the data construction.} Two properties of our metadata limit what the multimodal experiments can show. First, the pseudo-thermal stream is computed from the RGB frame, not measured by independent LWIR hardware; RGB + pseudo-thermal fusion therefore combines two representations of one sensor, cannot reveal phenomena invisible to RGB (such as heat sources in darkness), and degrades together with RGB. Second, the ESC-50 audio is assigned by shared label rather than recorded with the frame, so the same clip is paired with many unrelated images and carries no scene-specific information beyond its label. The experiments in Chapter~5 should be read in that light: they evaluate RGB, an RGB-derived map, and label-matched audio, not synchronized tri-modal sensing.
+\textbf{Consequences of the data construction.} Two properties of our metadata limit what the multimodal experiments can show. First, the pseudo-thermal stream is computed from the RGB frame, not measured by independent LWIR hardware; RGB + pseudo-thermal fusion therefore combines two representations of one sensor, cannot reveal phenomena invisible to RGB (such as heat sources in darkness), and degrades together with RGB. Second, the ESC-50 audio is assigned by shared label rather than recorded with the frame, so the same clip is paired with many unrelated images and carries no scene-specific information. Third, and more serious, it carries the label itself: whether a clip belongs to the ``crackling fire'' class decides fire/smoke versus clean without error on every row that has audio, in both the row-level and the grouped split. Any model given audio can therefore read the fire/clean label from it instead of recognising a hazard. The experiments in Chapter~5 should be read in that light: they evaluate RGB, an RGB-derived map, and label-leaking audio, not synchronized tri-modal sensing.
 
 \subsection{Pipeline with Real Dataset Samples}
 
@@ -76,7 +77,7 @@ To address this, a two-stage oversampling procedure is applied to the training a
 
 \subsubsection{Stratified Balanced Training Configuration (Resource Constraint)}
 
-Training large suites of multimodal models on the full-balanced split ($\sim$98{,}556 samples) at batch size 16 on a single RTX 5090 (32\,GB VRAM) would require approximately 3 hours per run and $\sim$80 hours total. A \textit{Stratified Balanced Training Subset} is therefore derived by applying source-stratified 50\% sampling to each disaster class of the full-balanced split, with a minimum of 5 rows per dataset source to ensure no source is dropped. The result is exactly 12{,}319 rows per disaster class, halving training time to $\sim$1.5 hours per run while preserving exact class balance and full source coverage.
+Training large suites of multimodal models on the full-balanced split ($\sim$98{,}556 samples) at batch size 16 on a single RTX 5090 (32\,GB VRAM) was estimated at planning time to require approximately 3 hours per run and $\sim$80 hours total. A \textit{Stratified Balanced Training Subset} is therefore derived by applying source-stratified 50\% sampling to each disaster class of the full-balanced split, with a minimum of 5 rows per dataset source to ensure no source is dropped. The result is exactly 12{,}319 rows per disaster class, halving the data per epoch while preserving exact class balance and full source coverage. (Actual logged run times, given below, were longer than this planning estimate.)
 
 \textbf{All twenty-six trained multimodal classification models use the Stratified Balanced Training Configuration.} The grouped-split retraining of AdapFuse-v1 (Section~\ref{sec:grouped_split}) is a separate run outside these twenty-six and was trained without class balancing.
 
@@ -169,7 +170,7 @@ F  & \textbf{AdapFuse-v2 (ours, KD)} & AdapFuse-v1 teacher $\to$ knowledge disti
 }
 \end{table}
 
-\noindent Each unimodal baseline is also trained with two alternative backbones, giving three per modality: EfficientNet-B0 and MobileViT-XXS for RGB and for 1-channel pseudo-thermal, and PANNS-CNN6 and a GDBlock variant of the AudioCNN for audio. Section~\ref{sec:unimodal_backbones} reports these runs, which allow each fused model to be compared with a unimodal model that uses the same backbone.
+\noindent Each unimodal baseline is also trained with two alternative backbones, giving three per modality: EfficientNet-B0 and MobileViT-XXS for RGB and for 1-channel pseudo-thermal, and a CNN6-style encoder and a GDBlock variant of the AudioCNN for audio. Section~\ref{sec:unimodal_backbones} reports these runs, which allow each fused model to be compared with a unimodal model that uses the same backbone.
 
 \noindent\textbf{Limitations of the proposed designs.} Designs E and F are held to the same standard as the baselines. For AdapFuse-v1, three of its four added components do not yet behave as their names suggest. (i)~The RUE receives no degradation targets, so its gates converge to saturated, input-independent values and act as a learned static weighting per modality, not a dynamic reliability estimate (Section~\ref{sec:robustness_stress_test}). (ii)~The GRU runs on a sequence of length one and therefore provides no temporal smoothing. (iii)~The NuisanceAwareHead receives no nuisance labels, so its loss is zero during training. The measured gain over the fixed-weight Design D is correspondingly small: +0.05\,pp combined macro-F1, together with a 2.9$\times$ lower focal test loss (Figure~\ref{fig:design_comparison}). AdapFuse-v2 inherits these properties. Because distillation halves only the projection width while the backbones stay unchanged, it removes just 4.9\% of the parameters (12.94M $\to$ 12.30M), and its deployment benefit has not been verified on embedded hardware. Accordingly, we present E and F as an architecture whose adaptive components are \emph{implemented but not yet validated}. Sections~\ref{sec:robustness_stress_test} and~\ref{sec:grouped_gates} give the supporting evidence, and the concluding chapter outlines the supervision needed to validate them.
 
@@ -196,8 +197,8 @@ Figure~\ref{fig:data_provenance} summarises what our metadata actually supply fo
 Each sensor has a dedicated lightweight backbone producing a 192-dimensional projected feature:
 
 \begin{itemize}
-    \item \textbf{RGB:} MobileNetV3-Small~\cite{howard2019mobilenetv3} pretrained on ImageNet. The 576-dim output of the final squeeze-excitation block is projected to 192 dimensions via a linear layer. Compute: $\sim$57 MFLOPs per frame.
-    \item \textbf{Pseudo-thermal:} ResNet-18~\cite{he2016deep} adapted for single-channel input (pretrained weights averaged across RGB channels at the first layer). The 512-dim global average-pooled output is projected to 192 dimensions. All populated thermal paths in our metadata are RGB-derived maps; no sensor-IR inputs are evaluated.
+    \item \textbf{RGB:} MobileNetV3-Small~\cite{howard2019mobilenetv3} pretrained on ImageNet. The 576-dim pooled output of its final $1\times1$ convolution is projected to 192 dimensions via a linear layer. Compute: $\approx$0.06 GMACs per frame (Table~\ref{tab:backbone_candidates}).
+    \item \textbf{Pseudo-thermal:} ResNet-18~\cite{he2016deep} adapted for single-channel input (pretrained first-layer weights summed across the RGB channels). The 512-dim global average-pooled output is projected to 192 dimensions. All populated thermal paths in our metadata are RGB-derived maps; no sensor-IR inputs are evaluated.
     \item \textbf{Audio:} A three-layer 2D-CNN on the 64$\times$63 log-mel spectrogram (filter progression 32$\to$64$\to$128). Global average pooling produces a 128-dim vector projected to 192 dimensions.
 \end{itemize}
 
@@ -242,7 +243,7 @@ In addition to the baseline encoders, several architectural variants were implem
 \begin{itemize}
     \item \textbf{EfficientNet-B0 Visual Backbones:} Replacing MobileNetV3-Small or ResNet-18 with EfficientNet-B0~\cite{tan2019efficientnet}, which leverages compound scaling across network depth, width, and resolution to capture fine-grained spatial and thermal signatures.
     \item \textbf{MobileViT-XXS Hybrid Transformer:} Incorporating MobileViT-XXS~\cite{mehta2022mobilevit}, combining MobileNet inverted residual blocks with lightweight Transformer self-attention to capture long-range aerial disaster scene dependencies at a small parameter budget (edge-device memory use is not measured here).
-    \item \textbf{PANNS-CNN6 Audio Backbone:} A 4-block convolutional network pretrained on 2.08 million AudioSet clips, producing 512-dimensional acoustic representations.
+    \item \textbf{PANNS-CNN6-style Audio Backbone:} A 4-block convolutional network with the channel widths of PANNs CNN6~\cite{kong2020panns} (64--512), producing 512-dimensional acoustic representations. Our implementation uses $3\times3$ kernels, whereas the released AudioSet checkpoint uses $5\times5$ kernels, so none of the checkpoint's convolution weights load (only 8 of 20 tensors, all batch-normalisation parameters). This encoder is therefore effectively trained from scratch, not an AudioSet transfer.
     \item \textbf{AudioCNN-GD Backbone:} A multi-scale dilated convolutional architecture employing parallel dilation rates ($d \in \{1, 3, 5\}$) to capture both transient bursts and sustained frequency patterns, a design aimed at rotor-noise environments (not tested here with measured rotor noise).
 \end{itemize}
 
@@ -301,19 +302,20 @@ ViT-B/16 & ViT & 85.80 & 17.56$^\ddagger$ & 81.1 & 2{,}628 & Over (MACs) \\
 \midrule
 AudioCNN (from scratch) & 0.09 & 0.037 & -- & 48 & \textbf{Selected} \\
 AudioCNN + GDBlock & 0.06 & 0.022 & -- & 58 & \textbf{Selected} \\
-PANNS-CNN6 encoder~\cite{kong2020panns} & 1.55 & 0.213 & -- & 102 & \textbf{Selected} \\
+CNN6-style encoder ($3\times3$)$^\ast$ & 1.55 & 0.213 & -- & 102 & \textbf{Selected} \\
 \midrule
 PANNs CNN6 (reported)~\cite{kong2020panns} & 4.8 & -- & 0.343 & -- & Reference \\
 PANNs CNN10 (reported)~\cite{kong2020panns} & 5.2 & -- & 0.380 & -- & Over (params) \\
 PANNs CNN14 (reported)~\cite{kong2020panns} & 80.8 & -- & 0.431 & -- & Over (params) \\
 \bottomrule
+\multicolumn{6}{@{}l}{\footnotesize $^\ast$Intended as PANNs CNN6 transfer, but the AudioSet convolution weights ($5\times5$) do not match its $3\times3$ kernels and are not loaded.}
 \end{tabular}%
 }
 \end{table}
 
-\textbf{Audio encoders.} The three audio encoders cover training from scratch (AudioCNN), a cheaper multi-scale variant (GDBlock) and AudioSet transfer (PANNS-CNN6). Larger audio networks such as PANNs CNN14 are about 16 times over the parameter budget. Because the audio in this corpus is label-matched ESC-50 rather than synchronised UAV audio, a larger audio encoder would not address the main limitation of the audio stream (Section~\ref{sec:unimodal_backbones}).
+\textbf{Audio encoders.} The three audio encoders cover training from scratch (AudioCNN), a cheaper multi-scale variant (GDBlock) and a wider CNN6-style encoder. The CNN6-style encoder was meant to test AudioSet transfer, but because of the kernel mismatch described above it was trained without pretrained convolution weights, so this thesis does not test AudioSet transfer. Larger audio networks such as PANNs CNN14 are about 16 times over the parameter budget. Because the audio in this corpus is label-matched ESC-50 rather than synchronised UAV audio, a larger audio encoder would not address the main limitation of the audio stream (Section~\ref{sec:unimodal_backbones}).
 
-\textbf{Scope of the selection.} This procedure selects backbones by cost and published accuracy. The selected backbones were then trained end-to-end inside the AdapFuse-UAV training pipeline, not benchmarked as stand-alone ImageNet classifiers: each was trained as the encoder of a unimodal baseline (Section~\ref{sec:unimodal_backbones}) and as an encoder of AdapFuse-v1 (Section~\ref{sec:backbone_variants}), with the same data loader, class balancing, augmentation, synthetic corruption, focal loss, mixed precision, early stopping and evaluation as every other model. Candidates that were not selected were not trained, so the thesis does not show that they would perform worse on this corpus.
+\textbf{Scope of the selection.} This procedure selects backbones by cost and published accuracy. The selected backbones were then trained end-to-end inside the AdapFuse-UAV training pipeline, not benchmarked as stand-alone ImageNet classifiers: each was trained as the encoder of a unimodal baseline (Section~\ref{sec:unimodal_backbones}) and as an encoder of AdapFuse-v1 (Section~\ref{sec:backbone_variants}), with the same data loader, class balancing, augmentation, focal loss, mixed precision, early stopping and evaluation as every other model (no synthetic corruption was applied during training). Candidates that were not selected were not trained, so the thesis does not show that they would perform worse on this corpus.
 
 \subsection{Architectural Augmentations and Component Ablations}
 
@@ -335,21 +337,24 @@ To bridge global scene perception with dense localized hazard detection, \textbf
         \item \textit{Bottom-Up Spatial Guidance (BUSG):} Aggregated bounding-box saliency maps from the detection head are pooled to enrich the victim localization classifier.
     \end{itemize}
     \item \textbf{Gradient Isolation and Phased Curriculum:}
-    To resolve multi-task negative transfer, where dense bounding box gradients corrupt the shared classification backbone:
+    To reduce multi-task negative transfer, where dense bounding box gradients may disturb the shared classification backbone, UniAdapFuse v2 changes the following relative to the naive v1 run:
     \begin{itemize}
         \item \textit{Phased Curriculum:} Training begins with Phase~1 (15 epochs) freezing the detection neck and head to establish robust classification representations, followed by Phase~2 joint training.
         \item \textit{Stop-Gradient Isolation:} Pyramid features entering the detection neck are detached (\texttt{.detach()}), preventing bounding-box regression loss from overwriting shared perceptual features.
         \item \textit{Differentiated Learning Rates:} Backbone encoders are updated with $0.1\times$ base learning rate ($5.0 \times 10^{-5}$), the classification stream at $1.0\times$ ($5.0 \times 10^{-4}$), and the detection head at $0.3\times$ ($1.5 \times 10^{-4}$).
+        \item \textit{Further recipe changes:} logit and feature distillation from the trained AdapFuse-v1 checkpoint, a base learning rate of $5\times10^{-4}$ instead of $10^{-3}$, 80 instead of 50 epochs (patience 25 instead of 15), and loss reweighting (disaster $2.0$, detection $0.2$).
     \end{itemize}
+    Because all of these changes were introduced in a single run, the thesis cannot attribute the classification recovery to any one of them.
 \end{enumerate}
 
 \subsection{Hazard Prior Gate (HPG) for Object Detection}
+\label{sec:hpg}
 
-For dense wildfire detection on the D-Fire benchmark, the \textbf{Hazard Prior Gate (HPG)} injects domain-specific physical priors into the detection backbone at stride~4:
+For dense wildfire detection on the D-Fire benchmark, the \textbf{Hazard Prior Gate (HPG)} is placed in front of the detector stem and computes deterministic cue maps from the input frame:
 \begin{equation}
-    \mathbf{P}_{\text{fire}} = \text{ReLU}(2R - G - B), \quad \mathbf{P}_{\text{smoke}} = 1 - \frac{\max(R,G,B) - \min(R,G,B)}{\max(R,G,B) + \epsilon}
+    \mathbf{P}_{\text{fire}} = \text{ReLU}\!\left(R - \tfrac{1}{2}(G + B)\right), \quad \mathbf{P}_{\text{smoke}} = 1 - \frac{\max(R,G,B) - \min(R,G,B)}{\max(R,G,B) + \epsilon}
 \end{equation}
-These deterministic chromaticity maps are concatenated with high-frequency spatial gradients and processed via a depthwise gating convolution. In our runs this shortens wall-clock training from 4.45 to 1.96 hours at a cost of 0.94 points of $\mathrm{mAP}_{50}$ (Section~\ref{sec:object_detection}); whether this reflects faster convergence has not been tested with learning curves.
+together with a Sobel edge-magnitude map of the luminance. The cues and the image are average-pooled to quarter resolution (stride~4), encoded by a small convolutional network, and upsampled into an RGB residual and a spatial gate; the output is $\mathbf{x} + s\,g\,\Delta\mathbf{x}$ with learned strength $s \leq 0.25$. In our runs HPG lowers $\mathrm{mAP}_{50}$ by 0.94 points and takes about $1.9\times$ longer to train than the baseline under the same 40-epoch recipe (Section~\ref{sec:object_detection}).
 
 \subsection{Training Configuration}
 
@@ -365,7 +370,7 @@ Table~\ref{tab:training} summarises all hyperparameters used across the twenty-s
 \midrule
 GPU & NVIDIA RTX 5090 (32\,GB VRAM), used for training and benchmarking; not the embedded deployment target \\
 Optimizer & AdamW ($\beta_1=0.9$, $\beta_2=0.999$, wd=$10^{-4}$) \\
-Learning rate & $10^{-3}$ with 5-epoch linear warmup $\to$ cosine decay to $10^{-5}$ \\
+Learning rate & $10^{-3}$ ($5\times10^{-4}$ for UniAdapFuse v2), configured as a 5-epoch linear warmup followed by cosine decay to $10^{-5}$. In the saved histories of Designs C, D, E, F, the domain-prompt variant and the naive UniAdapFuse run, the logged learning rate instead cycles between $\approx10^{-5}$ and $10^{-3}$ with a period of about eight epochs, whereas the other runs, including A1 and all five component ablations, follow the configured single decay; the schedule is therefore not identical across compared runs \\
 Batch size & 16 (8 for EfficientNet-B0 backbone variants) \\
 Max epochs & 50 (80 for UniAdapFuse-v2; early stopping patience = 15--25) \\
 Mixed precision & FP16 (AMP) \\
@@ -373,10 +378,10 @@ Training data & Stratified Balanced Subset: 49{,}276 samples, 25\% per disaster 
 Corruption augmentation & Not active: \texttt{corruption\_prob=0.3} is set, but no \texttt{corruption\_type} is passed, so no synthetic corruption is applied during training; corruptions are used only in offline stress tests \\
 Missing modality simulation & 20\% drop probability per sensor per sample \\
 Loss (Classification) & Focal Loss $\alpha=0.25$, $\gamma=2.0$ for disaster + victim tasks \\
-Loss (Distillation) & + logit KD (temp.=4.0) + feature KD ($\lambda=0.5$ each) \\
+Loss (Distillation) & + logit KD (temp.=4.0) + feature KD ($\lambda=0.5$ each); used by AdapFuse-v2 and by UniAdapFuse v2 \\
 Loss (Unified v2) & $2.0 \mathcal{L}_{\text{disaster}} + 0.5 \mathcal{L}_{\text{victim}} + 0.3 \mathcal{L}_{\text{nuisance}} + 0.2 \mathcal{L}_{\text{det}} + 0.75 \mathcal{L}_{\text{KD}}$; the nuisance term is zero because no nuisance labels are supplied \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-A total of 26 multimodal classification model configurations (plus 7 object detection configurations, totaling 33 models) were trained and evaluated on the RTX 5090 (32\,GB VRAM) platform. All twenty-six classification models were trained on the Stratified Balanced Training Subset (49{,}276 samples), with training times ranging from 1.5 to 3.5 hours per run; the separate grouped-split retraining was not.
+A total of 26 multimodal classification model configurations (plus 7 object detection configurations, totaling 33 models) were trained and evaluated on the RTX 5090 (32\,GB VRAM) platform. Further runs are reported separately: six unimodal backbone variants (Section~\ref{sec:unimodal_backbones}), six public-benchmark runs (Section~\ref{sec:public_benchmark_results}) and the grouped-split retraining (Section~\ref{sec:grouped_split}). All twenty-six classification models were trained on the Stratified Balanced Training Subset (49{,}276 samples); the logged training time per run ranges from about 2 to 15 hours. The separate grouped-split retraining did not use this subset.
