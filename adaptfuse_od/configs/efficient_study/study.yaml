@@ -1,0 +1,28 @@
+# Machine-readable experiment contract for the revised object-detection work.
+study_name: "YOLOv10n and YOLO26n Hazard Prior Gate study"
+seed: 42
+core_runs:
+  - "yolov10n_baseline.yaml"
+  - "yolo26n_baseline.yaml"
+  - "hazard_yolo26n.yaml"
+optional_diagnostic_ablations:
+  - "ablation_no_spectral.yaml"
+  - "ablation_no_detail.yaml"
+control_policy:
+  same_backbone: true
+  same_pretraining: true
+  same_data_split: true
+  same_augmentation: true
+  same_optimizer_and_schedule: true
+  controlled_pair: "YOLO26n versus YOLO26n plus Hazard Prior Gate"
+  historical_comparator: "YOLOv10n"
+selection:
+  primary_metric: "test mAP@50:95"
+  secondary_metrics:
+    - "test mAP@50"
+    - "per-class AP@50"
+    - "precision"
+    - "recall"
+    - "parameter count"
+    - "inference latency"
+  claim_policy: "Treat HPG as beneficial only if it improves held-out test accuracy without unacceptable latency overhead."

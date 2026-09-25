@@ -1,0 +1,1 @@
+C:\Users\USERAS\anaconda3\python.exe training\train.py --config configs\adaptfuse_v1_grouped_gtx960.yaml --metadata_dir data\metadata_grouped\seed_42 --output_dir outputs\grouped_repeated\seed_42 --seed 42 --batch_size 2 --num_workers 0

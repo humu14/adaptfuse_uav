@@ -1,0 +1,17 @@
+# YOLOv8 Nano — Industry baseline
+experiment_name: "benchmark_yolov8n"
+
+model:
+  architecture: "yolov8n"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire"
+  image_size: 640
+
+training:
+  epochs: 100
+  batch_size: 16
+  lr: 0.001
+  early_stopping_patience: 20

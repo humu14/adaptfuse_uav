@@ -1,0 +1,85 @@
+{
+  "architecture": "yolov8n",
+  "experiment_name": "benchmark_yolov8n",
+  "total_training_time_hours": 12.75631154053741,
+  "config": {
+    "project_name": "adaptfuse_od",
+    "experiment_name": "benchmark_yolov8n",
+    "output_dir": "outputs",
+    "seed": 42,
+    "dataset": {
+      "name": "dfire",
+      "root": "data/datasets/dfire",
+      "num_classes": 2,
+      "class_names": [
+        "fire",
+        "smoke"
+      ],
+      "image_size": 640,
+      "train_split": "train",
+      "val_split": "val",
+      "test_split": "test"
+    },
+    "model": {
+      "architecture": "yolov8n",
+      "pretrained": true,
+      "num_classes": 2,
+      "use_spd_conv": false,
+      "use_seam": false,
+      "use_p2_head": false,
+      "use_nad_head": false,
+      "use_acr": false,
+      "nad_num_nuisance_classes": 6,
+      "acr_hidden_dim": 64,
+      "acr_context_radius": 3
+    },
+    "training": {
+      "epochs": 100,
+      "batch_size": 16,
+      "optimizer": "AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.0001,
+      "momentum": 0.937,
+      "warmup_epochs": 5,
+      "scheduler": "cosine",
+      "min_lr": 1e-05,
+      "grad_accum_steps": 1,
+      "early_stopping_patience": 20,
+      "amp": true,
+      "num_workers": 4,
+      "pin_memory": true
+    },
+    "augmentation": {
+      "mosaic": 0.5,
+      "mixup": 0.1,
+      "hsv_h": 0.015,
+      "hsv_s": 0.7,
+      "hsv_v": 0.4,
+      "flip_lr": 0.5,
+      "flip_ud": 0.0,
+      "scale": 0.5,
+      "translate": 0.1,
+      "degrees": 0.0,
+      "perspective": 0.0,
+      "smoke_overlay_prob": 0.0,
+      "low_light_prob": 0.0,
+      "motion_blur_prob": 0.0
+    },
+    "loss": {
+      "box_loss_weight": 7.5,
+      "cls_loss_weight": 0.5,
+      "dfl_loss_weight": 1.5,
+      "nad_loss_weight": 0.3
+    },
+    "evaluation": {
+      "iou_thresholds": [
+        0.5
+      ],
+      "conf_threshold": 0.25,
+      "nms_iou_threshold": 0.45,
+      "max_detections": 300
+    },
+    "output_path": "outputs\\benchmark_yolov8n"
+  },
+  "timestamp": "2026-08-06T12:12:00.633691"
+}

@@ -1,0 +1,17 @@
+# YOLOv9 Tiny — Programmable Gradient Information
+experiment_name: "benchmark_yolov9t"
+
+model:
+  architecture: "yolov9t"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire"
+  image_size: 640
+
+training:
+  epochs: 100
+  batch_size: 16
+  lr: 0.001
+  early_stopping_patience: 20

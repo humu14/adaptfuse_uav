@@ -1,0 +1,30 @@
+# Optional diagnostic: retain spectral priors, remove boundary detail.
+experiment_name: "ablation_hpg_no_detail"
+output_dir: "outputs/efficient_study"
+
+model:
+  architecture: "hazard_yolo26n"
+  pretrained: true
+  num_classes: 2
+  hazard_prior_gate:
+    hidden_channels: 16
+    use_fire_prior: true
+    use_smoke_prior: true
+    use_detail_prior: false
+    max_residual: 0.25
+    gate_stride: 4
+
+dataset:
+  root: "data/datasets/dfire"
+  image_size: 512
+
+training:
+  epochs: 15
+  batch_size: 16
+  early_stopping_patience: 5
+  warmup_epochs: 1
+  cache: "disk"
+  close_mosaic: 3
+
+evaluation:
+  run_test_after_training: false

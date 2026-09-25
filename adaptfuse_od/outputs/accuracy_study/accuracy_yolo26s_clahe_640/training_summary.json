@@ -1,0 +1,119 @@
+{
+  "status": "completed",
+  "architecture": "yolo26s",
+  "experiment_name": "accuracy_yolo26s_clahe_640",
+  "total_training_time_hours": 42.64730770832963,
+  "validation_metrics": {
+    "precision": 0.7508345864330123,
+    "recall": 0.7128406758002346,
+    "mAP50": 0.7709853813186087,
+    "mAP50_95": 0.46045928229899713
+  },
+  "test_metrics": {
+    "architecture": "yolo26s",
+    "split": "test",
+    "mAP50": 0.7710375286312108,
+    "mAP50_95": 0.44798544129250334,
+    "precision": 0.7691207640867508,
+    "recall": 0.7010624667202956,
+    "AP50_smoke": 0.8484605251236567,
+    "AP50_fire": 0.693614532138765
+  },
+  "config": {
+    "project_name": "adaptfuse_od",
+    "experiment_name": "accuracy_yolo26s_clahe_640",
+    "output_dir": "E:\\Research Projects\\reserch writing\\Co-Sup\\adaptfuse_od\\outputs\\accuracy_study",
+    "seed": 42,
+    "dataset": {
+      "name": "dfire_clahe",
+      "root": "E:\\Research Projects\\reserch writing\\Co-Sup\\adaptfuse_od\\data\\datasets\\dfire_clahe",
+      "num_classes": 2,
+      "class_names": [
+        "smoke",
+        "fire"
+      ],
+      "image_size": 640,
+      "train_split": "train",
+      "val_split": "val",
+      "test_split": "test"
+    },
+    "model": {
+      "architecture": "yolo26s",
+      "pretrained": true,
+      "num_classes": 2,
+      "use_spd_conv": false,
+      "use_seam": false,
+      "use_p2_head": false,
+      "use_nad_head": false,
+      "use_acr": false,
+      "nad_num_nuisance_classes": 6,
+      "acr_hidden_dim": 64,
+      "acr_context_radius": 3,
+      "hazard_prior_gate": {
+        "hidden_channels": 16,
+        "use_fire_prior": true,
+        "use_smoke_prior": true,
+        "use_detail_prior": true,
+        "max_residual": 0.25,
+        "gate_stride": 4
+      }
+    },
+    "training": {
+      "epochs": 100,
+      "batch_size": 4,
+      "optimizer": "SGD",
+      "lr": 0.01,
+      "weight_decay": 0.0005,
+      "momentum": 0.937,
+      "warmup_epochs": 3,
+      "scheduler": "cosine",
+      "min_lr": 0.0001,
+      "grad_accum_steps": 1,
+      "early_stopping_patience": 20,
+      "amp": true,
+      "num_workers": 2,
+      "pin_memory": true,
+      "cache": "disk",
+      "close_mosaic": 10,
+      "cos_lr": true,
+      "save_period": 10,
+      "plots": true,
+      "validation_batch_size": 4
+    },
+    "augmentation": {
+      "mosaic": 1.0,
+      "mixup": 0.0,
+      "hsv_h": 0.01,
+      "hsv_s": 0.5,
+      "hsv_v": 0.3,
+      "flip_lr": 0.5,
+      "flip_ud": 0.0,
+      "scale": 0.5,
+      "translate": 0.1,
+      "degrees": 0.0,
+      "perspective": 0.0,
+      "smoke_overlay_prob": 0.0,
+      "low_light_prob": 0.0,
+      "motion_blur_prob": 0.0
+    },
+    "loss": {
+      "box_loss_weight": 7.5,
+      "cls_loss_weight": 0.5,
+      "dfl_loss_weight": 1.5,
+      "nad_loss_weight": 0.3
+    },
+    "evaluation": {
+      "iou_thresholds": [
+        0.5
+      ],
+      "conf_threshold": 0.25,
+      "map_conf_threshold": 0.001,
+      "nms_iou_threshold": 0.7,
+      "max_detections": 300,
+      "run_test_after_training": true,
+      "batch_size": 4
+    },
+    "output_path": "E:\\Research Projects\\reserch writing\\Co-Sup\\adaptfuse_od\\outputs\\accuracy_study\\accuracy_yolo26s_clahe_640"
+  },
+  "timestamp": "2026-08-18T23:26:01.238597"
+}

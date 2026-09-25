@@ -1,0 +1,11 @@
+{
+  "experiment": "adaptfuse_v2_kd_panns",
+  "test": {
+    "loss": 0.004131877873453564,
+    "disaster_f1": 0.9884033100367672,
+    "victim_f1": 0.9812868094854856,
+    "disaster_acc": 0.9924207834900922,
+    "victim_acc": 0.9867592000730527,
+    "combined_f1": 0.9848450597611265
+  }
+}

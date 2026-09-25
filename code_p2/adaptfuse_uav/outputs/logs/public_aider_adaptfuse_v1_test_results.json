@@ -1,0 +1,12 @@
+{
+  "experiment": "public_aider_adaptfuse_v1",
+  "test": {
+    "loss": 0.04985589657869119,
+    "disaster_f1": 0.9186227563167609,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.9579458147998382,
+    "victim_acc": 1.0,
+    "combined_f1": 0.9593113781583804,
+    "map50": 0.0
+  }
+}

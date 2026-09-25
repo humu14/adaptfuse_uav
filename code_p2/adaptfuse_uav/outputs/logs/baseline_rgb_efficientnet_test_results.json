@@ -1,0 +1,12 @@
+{
+  "experiment": "baseline_rgb_efficientnet",
+  "test": {
+    "loss": 0.012547171669948818,
+    "disaster_f1": 0.9887372596496455,
+    "victim_f1": 0.9889339317677956,
+    "disaster_acc": 0.992329467628527,
+    "victim_acc": 0.992238151766962,
+    "combined_f1": 0.9888355957087206,
+    "map50": 0.0
+  }
+}

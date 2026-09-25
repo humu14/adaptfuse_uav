@@ -1,0 +1,14 @@
+{
+  "rgb_backbone": 6.3792,
+  "thermal_backbone": 8.0373,
+  "audio_backbone": 0.6707,
+  "projectors_all": 0.399,
+  "quality_heads_all": 0.3666,
+  "rue": 1.323,
+  "cross_attention": 0.281,
+  "gru": 0.2526,
+  "head": 0.4063,
+  "total_pipeline": 13.0293,
+  "_params_M": 12.937,
+  "_batch_size": 1
+}

@@ -1,0 +1,29 @@
+{
+  "experiment": "adaptfuse_v1_grouped",
+  "seed": 41,
+  "wall_clock_seconds": 490.88966846466064,
+  "peak_vram_bytes": 316457984,
+  "peak_vram_reserved_bytes": 375390208,
+  "test_metrics": {
+    "loss": 0.136127690949547,
+    "disaster_f1": 0.8677878455467809,
+    "victim_f1": 0.8854721794218783,
+    "disaster_acc": 0.9143912769216905,
+    "victim_acc": 0.9253852392538524,
+    "combined_f1": 0.8766300124843296,
+    "map50": 0.0
+  },
+  "checkpoints": {
+    "best": "outputs\\grouped_repeated\\seed_41\\checkpoints\\adaptfuse_v1_grouped_best.pth",
+    "best_sha256": "89ee8695190a0fc5a10a96cb197a425907acc15f136210fd36d172074f87a61f",
+    "final": "outputs\\grouped_repeated\\seed_41\\checkpoints\\adaptfuse_v1_grouped_final.pth",
+    "final_sha256": "985310f3a7c004b9c669795c2e9b0cab565616bb2a846658bc02e040e3601e59"
+  },
+  "artifacts": {
+    "predictions": "outputs\\grouped_repeated\\seed_41\\run_artifacts\\test_predictions.csv",
+    "per_class_metrics": "outputs\\grouped_repeated\\seed_41\\run_artifacts\\test_metrics_per_class.csv",
+    "per_source_metrics": "outputs\\grouped_repeated\\seed_41\\run_artifacts\\test_metrics_per_source.csv",
+    "failure_gallery": "outputs\\grouped_repeated\\seed_41\\run_artifacts\\failure_gallery.png",
+    "failure_manifest": "outputs\\grouped_repeated\\seed_41\\run_artifacts\\failure_gallery_manifest.csv"
+  }
+}

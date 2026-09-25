@@ -1,0 +1,1 @@
+"""AdapFuse-UAV datasets package."""

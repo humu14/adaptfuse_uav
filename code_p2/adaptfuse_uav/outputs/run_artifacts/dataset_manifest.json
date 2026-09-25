@@ -1,0 +1,21 @@
+{
+  "metadata_dir": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\data\\metadata_public\\flame_official",
+  "aggregate_sha256": "9136aa0fb16b8c2d8b58306a9449d9b0a23fced1af0dff33ca3b9c2ca130c1e4",
+  "files": {
+    "train.csv": {
+      "path": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\data\\metadata_public\\flame_official\\train.csv",
+      "bytes": 9695694,
+      "sha256": "63f677b409627eb849854d83bd111529c5ca4665de4be94ec93462b15b9a6e0e"
+    },
+    "val.csv": {
+      "path": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\data\\metadata_public\\flame_official\\val.csv",
+      "bytes": 2408720,
+      "sha256": "8f2527fe5d2e919a4c5c6ac293d46603bb355c00c01a2d8c1e6767a53c9835d3"
+    },
+    "test.csv": {
+      "path": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\data\\metadata_public\\flame_official\\test.csv",
+      "bytes": 2700127,
+      "sha256": "8db6c5edefda4859c48630fb5e247146c932133e6680fb974c822a4de93f00e8"
+    }
+  }
+}

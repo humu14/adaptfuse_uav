@@ -1,0 +1,11 @@
+{
+  "experiment": "baseline_thermal",
+  "test": {
+    "loss": 0.01015011187994557,
+    "disaster_f1": 0.9802302114992041,
+    "victim_f1": 0.9684383080370644,
+    "disaster_acc": 0.9838370925029678,
+    "victim_acc": 0.977444982193407,
+    "combined_f1": 0.9743342597681343
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "created_unix": 1788876301.9986093,
+  "random_seed": 42,
+  "python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:17:27) [MSC v.1929 64 bit (AMD64)]",
+  "executable": "C:\\Users\\USERAS\\anaconda3\\python.exe",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD",
+  "logical_cpu_count": 6,
+  "device": "cuda",
+  "cuda": {
+    "available": true,
+    "torch_runtime": "12.1",
+    "cudnn": 8801
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce GTX 960",
+    "vram_bytes": 4294705152,
+    "compute_capability": [
+      5,
+      2
+    ],
+    "cuda_runtime": "12.1",
+    "cudnn": 8801,
+    "driver_version": "582.28"
+  },
+  "packages": {
+    "torch": "2.2.2+cu121",
+    "torchvision": "0.17.2+cu121",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scikit-learn": "1.5.1",
+    "opencv-python": "4.10.0.84",
+    "librosa": "0.11.0",
+    "albumentations": "1.4.10",
+    "PyYAML": "6.0.1"
+  }
+}

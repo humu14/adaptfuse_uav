@@ -1,0 +1,12 @@
+{
+  "experiment": "public_aider_rgb_mobilenetv3",
+  "test": {
+    "loss": 0.038530753207650204,
+    "disaster_f1": 0.9301636320431635,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.9648200566114031,
+    "victim_acc": 1.0,
+    "combined_f1": 0.9650818160215817,
+    "map50": 0.0
+  }
+}

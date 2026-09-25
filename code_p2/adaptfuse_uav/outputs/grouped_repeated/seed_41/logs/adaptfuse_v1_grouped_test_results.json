@@ -1,0 +1,12 @@
+{
+  "experiment": "adaptfuse_v1_grouped",
+  "test": {
+    "loss": 0.136127690949547,
+    "disaster_f1": 0.8677878455467809,
+    "victim_f1": 0.8854721794218783,
+    "disaster_acc": 0.9143912769216905,
+    "victim_acc": 0.9253852392538524,
+    "combined_f1": 0.8766300124843296,
+    "map50": 0.0
+  }
+}

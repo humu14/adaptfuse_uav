@@ -1,0 +1,19 @@
+# RT-DETR with ResNet-18 backbone — Transformer-based detector
+experiment_name: "benchmark_rtdetr_r18"
+
+model:
+  architecture: "rtdetr_r18"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire"
+  image_size: 640
+
+training:
+  epochs: 100
+  batch_size: 8
+  lr: 0.0001
+  optimizer: "AdamW"
+  weight_decay: 0.0001
+  early_stopping_patience: 20

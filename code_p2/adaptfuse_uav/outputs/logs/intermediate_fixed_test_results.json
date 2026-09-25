@@ -1,0 +1,11 @@
+{
+  "experiment": "intermediate_fixed",
+  "test": {
+    "loss": 0.0058794309906954065,
+    "disaster_f1": 0.9910725743614464,
+    "victim_f1": 0.9827631266062713,
+    "disaster_acc": 0.994703680029221,
+    "victim_acc": 0.9878549904118346,
+    "combined_f1": 0.9869178504838588
+  }
+}

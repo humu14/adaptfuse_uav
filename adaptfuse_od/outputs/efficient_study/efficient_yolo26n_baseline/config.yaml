@@ -1,0 +1,83 @@
+project_name: adaptfuse_od
+experiment_name: efficient_yolo26n_baseline
+output_dir: E:\Research Projects\reserch writing\Co-Sup\adaptfuse_od\outputs\efficient_study
+seed: 42
+dataset:
+  name: dfire
+  root: E:\Research Projects\reserch writing\Co-Sup\adaptfuse_od\data\datasets\dfire
+  num_classes: 2
+  class_names:
+  - fire
+  - smoke
+  image_size: 512
+  train_split: train
+  val_split: val
+  test_split: test
+model:
+  architecture: yolo26n
+  pretrained: true
+  num_classes: 2
+  use_spd_conv: false
+  use_seam: false
+  use_p2_head: false
+  use_nad_head: false
+  use_acr: false
+  nad_num_nuisance_classes: 6
+  acr_hidden_dim: 64
+  acr_context_radius: 3
+  hazard_prior_gate:
+    hidden_channels: 16
+    use_fire_prior: true
+    use_smoke_prior: true
+    use_detail_prior: true
+    max_residual: 0.25
+    gate_stride: 4
+training:
+  epochs: 40
+  batch_size: 16
+  optimizer: AdamW
+  lr: 0.001
+  weight_decay: 0.0001
+  momentum: 0.937
+  warmup_epochs: 2
+  scheduler: cosine
+  min_lr: 1.0e-05
+  grad_accum_steps: 1
+  early_stopping_patience: 8
+  amp: true
+  num_workers: 4
+  pin_memory: true
+  cache: disk
+  close_mosaic: 5
+  cos_lr: true
+  save_period: -1
+  plots: true
+augmentation:
+  mosaic: 0.5
+  mixup: 0.1
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  flip_lr: 0.5
+  flip_ud: 0.0
+  scale: 0.5
+  translate: 0.1
+  degrees: 0.0
+  perspective: 0.0
+  smoke_overlay_prob: 0.0
+  low_light_prob: 0.0
+  motion_blur_prob: 0.0
+loss:
+  box_loss_weight: 7.5
+  cls_loss_weight: 0.5
+  dfl_loss_weight: 1.5
+  nad_loss_weight: 0.3
+evaluation:
+  iou_thresholds:
+  - 0.5
+  conf_threshold: 0.25
+  map_conf_threshold: 0.001
+  nms_iou_threshold: 0.7
+  max_detections: 300
+  run_test_after_training: true
+output_path: E:\Research Projects\reserch writing\Co-Sup\adaptfuse_od\outputs\efficient_study\efficient_yolo26n_baseline

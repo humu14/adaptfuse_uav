@@ -1,0 +1,41 @@
+# Core experiment 3/3: YOLO26n with the proposed Hazard Prior Gate.
+experiment_name: "efficient_hpg_yolo26n"
+output_dir: "outputs/efficient_study"
+
+model:
+  architecture: "hazard_yolo26n"
+  pretrained: true
+  num_classes: 2
+  hazard_prior_gate:
+    hidden_channels: 16
+    use_fire_prior: true
+    use_smoke_prior: true
+    use_detail_prior: true
+    max_residual: 0.25
+    gate_stride: 4
+
+dataset:
+  name: "dfire"
+  root: "data/datasets/dfire"
+  image_size: 512
+
+training:
+  epochs: 40
+  batch_size: 16
+  # Ultralytics normally doubles this to 32 for validation. Batch 8 keeps
+  # CUDA kernels below the Windows display-driver watchdog limit on GTX 960.
+  validation_batch_size: 8
+  optimizer: "AdamW"
+  lr: 0.001
+  warmup_epochs: 2
+  early_stopping_patience: 8
+  cache: "disk"
+  close_mosaic: 5
+  cos_lr: true
+  save_period: -1
+
+evaluation:
+  run_test_after_training: true
+  batch_size: 8
+  map_conf_threshold: 0.001
+  nms_iou_threshold: 0.7

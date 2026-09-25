@@ -1,0 +1,36 @@
+# Core experiment 2/2: same detector and schedule, with the proposed HPG.
+experiment_name: "efficient_hpg_yolov10n"
+output_dir: "outputs/efficient_study"
+
+model:
+  architecture: "hazard_yolov10n"
+  pretrained: true
+  num_classes: 2
+  hazard_prior_gate:
+    hidden_channels: 16
+    use_fire_prior: true
+    use_smoke_prior: true
+    use_detail_prior: true
+    max_residual: 0.25
+
+dataset:
+  name: "dfire"
+  root: "data/datasets/dfire"
+  image_size: 512
+
+training:
+  epochs: 40
+  batch_size: 16
+  optimizer: "AdamW"
+  lr: 0.001
+  warmup_epochs: 2
+  early_stopping_patience: 8
+  cache: "disk"
+  close_mosaic: 5
+  cos_lr: true
+  save_period: -1
+
+evaluation:
+  run_test_after_training: true
+  map_conf_threshold: 0.001
+  nms_iou_threshold: 0.7

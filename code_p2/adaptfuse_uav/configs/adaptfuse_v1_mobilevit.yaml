@@ -1,0 +1,35 @@
+model: adaptfuse_v1
+experiment_name: adaptfuse_v1_mobilevit
+modalities: [rgb, thermal, audio]
+num_classes_disaster: 4
+num_classes_victim: 2
+
+# EXP-17: MobileViT-XXS RGB backbone (CNN+ViT hybrid)
+# 1.3M params, 320d output. Local CNN + global attention.
+# Requires: pip install timm
+# Best for aerial imagery: local texture + global scene context
+rgb_backbone: mobilevit_xxs
+thermal_backbone: resnet18
+audio_backbone: audiocnn
+
+batch_size: 8
+epochs: 50
+lr: 1e-3
+weight_decay: 1e-4
+use_focal_loss: true
+use_balanced: true
+use_balanced_half: true
+use_kd: false
+kd_teacher_ckpt: null
+corruption_prob: 0.3
+missing_modality_prob: 0.2
+scheduler: CosineAnnealingLR
+T_max: 50
+min_lr: 1e-5
+warmup_epochs: 5
+num_workers: 4
+seed: 42
+device: cuda
+output_dir: outputs/
+early_stopping: true
+early_stopping_patience: 15

@@ -1,0 +1,12 @@
+{
+  "experiment": "public_flame_rgb_mobilenetv3",
+  "test": {
+    "loss": 0.18001142242047719,
+    "disaster_f1": 0.6276069988285097,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.6940930718347452,
+    "victim_acc": 1.0,
+    "combined_f1": 0.8138034994142549,
+    "map50": 0.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "experiment": "ablation_no_nuisance",
+  "test": {
+    "loss": 0.00919803836407461,
+    "disaster_f1": 0.9923011482769147,
+    "victim_f1": 0.9820924014538064,
+    "disaster_acc": 0.9941557848598301,
+    "victim_acc": 0.9873984111040087,
+    "combined_f1": 0.9871967748653605,
+    "map50": 0.0
+  }
+}

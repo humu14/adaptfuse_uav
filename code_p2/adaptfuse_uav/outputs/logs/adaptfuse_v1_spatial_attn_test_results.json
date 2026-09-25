@@ -1,0 +1,12 @@
+{
+  "experiment": "adaptfuse_v1_spatial_attn",
+  "test": {
+    "loss": 0.0034333680069528003,
+    "disaster_f1": 0.9873759409228542,
+    "victim_f1": 0.9814236426879825,
+    "disaster_acc": 0.9902292028125286,
+    "victim_acc": 0.9868505159346178,
+    "combined_f1": 0.9843997918054184,
+    "map50": 0.0
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "experiment": "adaptfuse_v1_efficientnet_thermal",
+  "test": {
+    "loss": 0.009502676077884936,
+    "disaster_f1": 0.9923722900631179,
+    "victim_f1": 0.9836751771998321,
+    "disaster_acc": 0.9949776276139165,
+    "victim_acc": 0.9885855173043557,
+    "combined_f1": 0.988023733631475,
+    "map50": 0.0
+  }
+}

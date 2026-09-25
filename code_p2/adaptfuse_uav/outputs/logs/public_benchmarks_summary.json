@@ -1,0 +1,74 @@
+{
+  "public_aider_rgb_mobilenetv3": {
+    "experiment": "public_aider_rgb_mobilenetv3",
+    "test": {
+      "loss": 0.038530753207650204,
+      "disaster_f1": 0.9301636320431635,
+      "victim_f1": 1.0,
+      "disaster_acc": 0.9648200566114031,
+      "victim_acc": 1.0,
+      "combined_f1": 0.9650818160215817,
+      "map50": 0.0
+    }
+  },
+  "public_aider_rgb_efficientnet": {
+    "experiment": "public_aider_rgb_efficientnet",
+    "test": {
+      "loss": 0.029876088797353175,
+      "disaster_f1": 0.9400069608544864,
+      "victim_f1": 1.0,
+      "disaster_acc": 0.9700768297614234,
+      "victim_acc": 1.0,
+      "combined_f1": 0.9700034804272433,
+      "map50": 0.0
+    }
+  },
+  "public_aider_adaptfuse_v1": {
+    "experiment": "public_aider_adaptfuse_v1",
+    "test": {
+      "loss": 0.04985589657869119,
+      "disaster_f1": 0.9186227563167609,
+      "victim_f1": 1.0,
+      "disaster_acc": 0.9579458147998382,
+      "victim_acc": 1.0,
+      "combined_f1": 0.9593113781583804,
+      "map50": 0.0
+    }
+  },
+  "public_flame_rgb_mobilenetv3": {
+    "experiment": "public_flame_rgb_mobilenetv3",
+    "test": {
+      "loss": 0.18001142242047719,
+      "disaster_f1": 0.6276069988285097,
+      "victim_f1": 1.0,
+      "disaster_acc": 0.6940930718347452,
+      "victim_acc": 1.0,
+      "combined_f1": 0.8138034994142549,
+      "map50": 0.0
+    }
+  },
+  "public_flame_rgb_efficientnet": {
+    "experiment": "public_flame_rgb_efficientnet",
+    "test": {
+      "loss": 0.08564443024549989,
+      "disaster_f1": 0.8285079140775733,
+      "victim_f1": 1.0,
+      "disaster_acc": 0.837182314030405,
+      "victim_acc": 1.0,
+      "combined_f1": 0.9142539570387866,
+      "map50": 0.0
+    }
+  },
+  "public_flame_adaptfuse_v1": {
+    "experiment": "public_flame_adaptfuse_v1",
+    "test": {
+      "loss": 0.13321868368662576,
+      "disaster_f1": 0.7292576406853314,
+      "victim_f1": 1.0,
+      "disaster_acc": 0.7552512475339446,
+      "victim_acc": 1.0,
+      "combined_f1": 0.8646288203426657,
+      "map50": 0.0
+    }
+  }
+}

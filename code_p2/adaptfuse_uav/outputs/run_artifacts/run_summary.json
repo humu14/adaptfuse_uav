@@ -1,0 +1,29 @@
+{
+  "experiment": "public_flame_adaptfuse_v1",
+  "seed": 42,
+  "wall_clock_seconds": 4045.048646211624,
+  "peak_vram_bytes": 2836400128,
+  "peak_vram_reserved_bytes": 2915041280,
+  "test_metrics": {
+    "loss": 0.13321868368662576,
+    "disaster_f1": 0.7292576406853314,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.7552512475339446,
+    "victim_acc": 1.0,
+    "combined_f1": 0.8646288203426657,
+    "map50": 0.0
+  },
+  "checkpoints": {
+    "best": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\checkpoints\\public_flame_adaptfuse_v1_best.pth",
+    "best_sha256": "db2ddd34267eaf912bfcfea2539f900b0120bfcf02ef2fd1aac9b4440f0f5072",
+    "final": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\checkpoints\\public_flame_adaptfuse_v1_final.pth",
+    "final_sha256": "5f373804b8ca136678154cc1f38674e17715034e930a72a306a1a72829ed83d5"
+  },
+  "artifacts": {
+    "predictions": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\run_artifacts\\test_predictions.csv",
+    "per_class_metrics": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\run_artifacts\\test_metrics_per_class.csv",
+    "per_source_metrics": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\run_artifacts\\test_metrics_per_source.csv",
+    "failure_gallery": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\run_artifacts\\failure_gallery.png",
+    "failure_manifest": "E:\\Research Projects\\reserch writing\\Co-Sup\\code_p2\\adaptfuse_uav\\outputs\\run_artifacts\\failure_gallery_manifest.csv"
+  }
+}

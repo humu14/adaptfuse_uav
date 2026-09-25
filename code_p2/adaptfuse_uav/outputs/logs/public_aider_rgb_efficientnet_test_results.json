@@ -1,0 +1,12 @@
+{
+  "experiment": "public_aider_rgb_efficientnet",
+  "test": {
+    "loss": 0.029876088797353175,
+    "disaster_f1": 0.9400069608544864,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.9700768297614234,
+    "victim_acc": 1.0,
+    "combined_f1": 0.9700034804272433,
+    "map50": 0.0
+  }
+}

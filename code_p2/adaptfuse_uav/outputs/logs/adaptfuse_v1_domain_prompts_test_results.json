@@ -1,0 +1,11 @@
+{
+  "experiment": "adaptfuse_v1_domain_prompts",
+  "test": {
+    "loss": 0.003453880186198134,
+    "disaster_f1": 0.9885019364236177,
+    "victim_f1": 0.9812767359183705,
+    "disaster_acc": 0.9926947310747877,
+    "victim_acc": 0.9868505159346178,
+    "combined_f1": 0.9848893361709941
+  }
+}

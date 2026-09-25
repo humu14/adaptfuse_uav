@@ -1,0 +1,21 @@
+# Faster R-CNN with MobileNetV3-Large FPN — Two-stage precision baseline
+experiment_name: "benchmark_fasterrcnn_mobilenetv3"
+
+model:
+  architecture: "fasterrcnn_mobilenetv3"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire"
+  image_size: 640
+
+training:
+  epochs: 100
+  batch_size: 8
+  lr: 0.005
+  optimizer: "SGD"
+  momentum: 0.9
+  weight_decay: 0.0005
+  warmup_epochs: 3
+  early_stopping_patience: 20

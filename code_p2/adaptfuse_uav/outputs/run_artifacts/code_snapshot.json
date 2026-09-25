@@ -1,0 +1,387 @@
+{
+  "git_head": "0425e99f0e696a216f3959e4f259b67039f82dc4",
+  "git_dirty": true,
+  "code_tree_sha256": "4eb7fc82a7fe51b2fd0e9c80f0c525d2e1eac965574dcb1fe2ff3c40cdd91e10",
+  "files": [
+    {
+      "path": "configs/ablation_no_attention.yaml",
+      "sha256": "21c22d3b413940343d798fe6e823f224eb87d61ecfd1eb0352a1e0cfd83e5795"
+    },
+    {
+      "path": "configs/ablation_no_gru.yaml",
+      "sha256": "bf50c28e219c55d3482ce27f141ab944ab6997accdf948405d7c970b5fee97fe"
+    },
+    {
+      "path": "configs/ablation_no_nuisance.yaml",
+      "sha256": "85f44ac95cc0c190cf11cf926fe5cfb1b812ec3a06a5d7e31b0d2280df63dcf9"
+    },
+    {
+      "path": "configs/ablation_no_quality_tokens.yaml",
+      "sha256": "d1a34ad990eadb86c41cb96958ccfabfd72db492a0db364be811293c532410fa"
+    },
+    {
+      "path": "configs/ablation_no_rue.yaml",
+      "sha256": "05555965c4fefc24898648172b84a73dda78e8e0612a959634edf174e0e46f2a"
+    },
+    {
+      "path": "configs/adaptfuse_v1.yaml",
+      "sha256": "ea9cfb29b3e967f385754b40044259a2a2e56d2848fd60822abc154732658af1"
+    },
+    {
+      "path": "configs/adaptfuse_v1_domain_prompts.yaml",
+      "sha256": "a74a503d5da1992b9d7ba25cd3543091525d514d0f76d6d5f1a18fcd66410c39"
+    },
+    {
+      "path": "configs/adaptfuse_v1_efficientnet_rgb.yaml",
+      "sha256": "a1716af29df6f6c5c764b06ccc853fcf05228f000f64564f98aecf47da72b6bc"
+    },
+    {
+      "path": "configs/adaptfuse_v1_efficientnet_thermal.yaml",
+      "sha256": "b1e7e151c3fc904044b565b39a6cabd9c9ee6b663a3bbcde4a752c685603acde"
+    },
+    {
+      "path": "configs/adaptfuse_v1_gdblock.yaml",
+      "sha256": "23458d56591e2d390d65e05b24ed340a61bd449f7000324e945479063c6c9647"
+    },
+    {
+      "path": "configs/adaptfuse_v1_grouped_gtx960.yaml",
+      "sha256": "743376bf3621cdc2517f6e55ea4fd0e1e254f0d0ca0c34f6eabe0efe95a15801"
+    },
+    {
+      "path": "configs/adaptfuse_v1_grouped_no_rue_gtx960.yaml",
+      "sha256": "560cc8bbbc2e9d6705210fd22f196a905eec35e6d3b887b7bf1824830f8bb498"
+    },
+    {
+      "path": "configs/adaptfuse_v1_mobilevit.yaml",
+      "sha256": "8f1638719d90e4853170c3f364db9354e6c48fe56889567666397e37af855faf"
+    },
+    {
+      "path": "configs/adaptfuse_v1_panns.yaml",
+      "sha256": "016857761fa75f0979f7991c996ddffb4cc92047a8668ca87ec7ac63859c4f33"
+    },
+    {
+      "path": "configs/adaptfuse_v1_spatial_attn.yaml",
+      "sha256": "74cd5810f3b3f506a6c8accf5a10f01d2253e3232e18e9757b5a665d20c5ea50"
+    },
+    {
+      "path": "configs/adaptfuse_v2_kd.yaml",
+      "sha256": "d6cd7dee38bc11da6b6b9d9888f21cce883802281c203cf7e30e461f429cdc94"
+    },
+    {
+      "path": "configs/adaptfuse_v2_kd_panns.yaml",
+      "sha256": "50723f35f6de279bc443f3f718780ff73c075cffc8f78e25fc09f7701bdaa36b"
+    },
+    {
+      "path": "configs/baseline_audio.yaml",
+      "sha256": "dc70058a6bff16f35bbc9af145474a7c34416dccad9f68ec80ba71b86f3d16da"
+    },
+    {
+      "path": "configs/baseline_audio_gdblock.yaml",
+      "sha256": "7b0ee59d8d284e41c7de01ad3ccb504e386c3e284297147dd6122ebae0a8d1d2"
+    },
+    {
+      "path": "configs/baseline_audio_panns.yaml",
+      "sha256": "a05d891cb957dc857e9587b7872ead94a50c4a9091721a368c1d0ed95c0951ea"
+    },
+    {
+      "path": "configs/baseline_deepfire.yaml",
+      "sha256": "f984a6821d93c8e4323f593a159d00778d26bf794aacb0a0360b93873138d272"
+    },
+    {
+      "path": "configs/baseline_dynamic_routing.yaml",
+      "sha256": "8ccee7451d92da86fb547ee975163358aa11df097d76eec1baef51be61f30fd5"
+    },
+    {
+      "path": "configs/baseline_firergbtnet.yaml",
+      "sha256": "990998714412fc83e3d9c16d4fb58a6bc3cb42080b08afb2f26a52d77abbbb0c"
+    },
+    {
+      "path": "configs/baseline_rgb.yaml",
+      "sha256": "d84c1ed4eb5174af17c39c1c1e6d997931a98fa3966aea9e80cfbd1f6de3101d"
+    },
+    {
+      "path": "configs/baseline_rgb_efficientnet.yaml",
+      "sha256": "f51646336afe1c37bd3ef35de1b7a64396a02ff00facd6808042581a9b2d6478"
+    },
+    {
+      "path": "configs/baseline_rgb_mobilevit.yaml",
+      "sha256": "ce9bb56cc1f96eb9667e0c030e459217fd1c60e4f501f66ab661aca442e14591"
+    },
+    {
+      "path": "configs/baseline_thermal.yaml",
+      "sha256": "5639c9930e6efb31cec4dccd198309d800d1faab011b2c1b6d2fa6e8a8019f34"
+    },
+    {
+      "path": "configs/baseline_thermal_efficientnet.yaml",
+      "sha256": "e43a5380c1be9301326a783383a103208c19433c6f4f9ca0e5d684a1f44355ac"
+    },
+    {
+      "path": "configs/baseline_thermal_mobilevit.yaml",
+      "sha256": "d2946c8c59290103b8fc786dde99fa1dadc54db2d999d88716ea930989de942d"
+    },
+    {
+      "path": "configs/baseline_xu_cross_attn.yaml",
+      "sha256": "b9991c9a643e3b4a8319bce71bd5b52bc9ccb694cacf6b92e8289c6234102bd6"
+    },
+    {
+      "path": "configs/early_fusion.yaml",
+      "sha256": "ac1a1389b2036f6878a116dcfd058fc7b085be2a64bc796019bf0c32735185d5"
+    },
+    {
+      "path": "configs/fusion_rgb_audio.yaml",
+      "sha256": "3ead665c1c3e89d86388796a77ba2d4256d420fa620f463a8b6d2a9f600086b1"
+    },
+    {
+      "path": "configs/fusion_rgb_thermal.yaml",
+      "sha256": "9fe65505da700a4106bfe9fc8c12ab6528c16814d706ccd8c2679289ca863ed9"
+    },
+    {
+      "path": "configs/fusion_thermal_audio.yaml",
+      "sha256": "8ed5565956f02ae977300aee555db27f9b7e1f006baab8e2fa233d795753b0fd"
+    },
+    {
+      "path": "configs/intermediate_fixed.yaml",
+      "sha256": "fd6ca00b0ccbd44b50e1958faf177526dc5506a69aac756263c1099a36dc1dcf"
+    },
+    {
+      "path": "configs/late_fusion.yaml",
+      "sha256": "8f944408b2c45f534af8f42e679ac0e6abc7937153886e93b144fdae469bc11f"
+    },
+    {
+      "path": "configs/public_aider_adaptfuse_v1.yaml",
+      "sha256": "19ce99c70981fb87cbab37ba78cd2e89f0afbae0bd361cef06684d0dc540c601"
+    },
+    {
+      "path": "configs/public_aider_rgb_efficientnet.yaml",
+      "sha256": "617669ca6c1c7205099b9a5ac1869fff24ff8e60f8c98646710aeadb669d85ea"
+    },
+    {
+      "path": "configs/public_aider_rgb_mobilenetv3.yaml",
+      "sha256": "1c36f152ef7a367b9b4f1b750b9ba19f5db353d19a5b4067e98711dc86e4d63c"
+    },
+    {
+      "path": "configs/public_flame_adaptfuse_v1.yaml",
+      "sha256": "9c87ba973293f0ada219c51675bd33a4978eeac6fffbe542f84c3adac9e3064b"
+    },
+    {
+      "path": "configs/public_flame_rgb_efficientnet.yaml",
+      "sha256": "42b99fd26e1d1de1f9faef2cec8b892e89f4af2a9f5c48c52783f6baf3143b8d"
+    },
+    {
+      "path": "configs/public_flame_rgb_mobilenetv3.yaml",
+      "sha256": "bbe5296fbc237d7d79ff3a8c32706a62f932045e25ae29b94986e04c5efda129"
+    },
+    {
+      "path": "configs/uni_adaptfuse.yaml",
+      "sha256": "d694216e4913193adb189a1a6f0e7c1155eca0bd995b273ee33499618e34d669"
+    },
+    {
+      "path": "configs/uni_adaptfuse_v2.yaml",
+      "sha256": "1313deb2093b0386e4143a1f82053dcc7067d569e2cc25918273f145b91179f1"
+    },
+    {
+      "path": "configs/uni_adaptfuse_v2_grouped_gtx960.yaml",
+      "sha256": "35467444f00c8bab8cc858872b1c4a07ddce0a988496c95c5ce561adb32aa339"
+    },
+    {
+      "path": "datasets/__init__.py",
+      "sha256": "f137076e46c7be2dd198ce3a1f912c84c452f13cafcfeb3f5671af9b50118a5c"
+    },
+    {
+      "path": "datasets/corruptions.py",
+      "sha256": "23c5c55a7cb68fc17b831c9c6be3a7948fac5837fb9eff66f5f441d847ddc877"
+    },
+    {
+      "path": "datasets/multimodal_dataset.py",
+      "sha256": "87036faf3a364bed77aabe611d0e4f49a16ab13dfd5d96fc5601c51b194ae0ed"
+    },
+    {
+      "path": "datasets/raw/ESC50/ESC-50-master/.circleci/config.yml",
+      "sha256": "401d66f92d5cbfe054050641bde171281d9bd2bc98248e82b49e90339ee12c51"
+    },
+    {
+      "path": "datasets/raw/ESC50/ESC-50-master/.github/stale.yml",
+      "sha256": "3cfc19b845d8dad7ed38b64e42d43c36fcfe6db28c162aeedc8f9c23e2028da9"
+    },
+    {
+      "path": "datasets/raw/ESC50/ESC-50-master/tests/test_dataset.py",
+      "sha256": "34732d792381ebe46ba03a14c40b66023a9375b1e4ac205691257b5903c0c993"
+    },
+    {
+      "path": "datasets/raw/SARD/data.yaml",
+      "sha256": "ac41d22797ce14001d5334ab4439f808f436dd93d2b8367be4a3df4bd9737954"
+    },
+    {
+      "path": "evaluation/__init__.py",
+      "sha256": "9a36c27e29e7b14e42395496eb4ea795717c9817bf5ad99899195ac996b7d909"
+    },
+    {
+      "path": "evaluation/evaluate.py",
+      "sha256": "8332815b25e7cdb0beee8230d3019e24d3dce7fce5f2ec3561cccb767dbee126"
+    },
+    {
+      "path": "evaluation/metrics.py",
+      "sha256": "4deb88addb1ffeb93596cdd0c7ec4990ce00fa2f0a6b7757ace0677017433f4e"
+    },
+    {
+      "path": "evaluation/plot_results.py",
+      "sha256": "ce843fae4955f63b71012201de4317d44284706fddc0d983baaa891c599e81c9"
+    },
+    {
+      "path": "evaluation/profile_latency.py",
+      "sha256": "7949d3f0b1a0dd448866d509dcfac77b9fcb7b0d23bd9d710e94ab991e8cffa5"
+    },
+    {
+      "path": "evaluation/reliability_analysis.py",
+      "sha256": "7b86eb6c54280da06e205f2925d97dc3dc338c185cf9afc33b93a78deeb04b6a"
+    },
+    {
+      "path": "evaluation/robustness_eval.py",
+      "sha256": "e8feb9cf266ced507ea21d5f2d15691f86ebd916160cab1d13105cf789229f9e"
+    },
+    {
+      "path": "models/__init__.py",
+      "sha256": "860bc2ccb1b84836aedb1e42d8078988afce30c8b54e1eab638e58aab123025d"
+    },
+    {
+      "path": "models/backbones/__init__.py",
+      "sha256": "b3ed56e393cf38a6af4c3e20d4c5f0fd69ba360485cc90cc77c5d50e526921a8"
+    },
+    {
+      "path": "models/backbones/audio_backbone.py",
+      "sha256": "6a2a27aa624c708577692a5063a0f36bd742b269e8b71c69f9b2478ec5e0ac22"
+    },
+    {
+      "path": "models/backbones/rgb_backbone.py",
+      "sha256": "d1d445ae33a6e1b5a8b0232a55a2f9be092660bf2102def9c0c2e1a23ee22e2c"
+    },
+    {
+      "path": "models/backbones/thermal_backbone.py",
+      "sha256": "dd3dc324cd404aa6c049857f4ab884fa12f2904caafc050e8dca2d0fb46d7a43"
+    },
+    {
+      "path": "models/external_baselines.py",
+      "sha256": "eee94463665d23333ffb3eb341b857288d645dc188a9fe23c1bb4425db680129"
+    },
+    {
+      "path": "models/full_model.py",
+      "sha256": "adf0dc40aeda868bbf36ed8b3405199803adc00d56b95d58f20408658ce8cd55"
+    },
+    {
+      "path": "models/novel_modules/__init__.py",
+      "sha256": "1d353b8f3e3d447aad696c3f2082038b254b43f31baa1ad696e346972eef64bc"
+    },
+    {
+      "path": "models/novel_modules/dynamic_rue.py",
+      "sha256": "60a014a22c09b59de880e95cb0a5155ef1e5f0c2a862c11edc3fc613013aab95"
+    },
+    {
+      "path": "models/novel_modules/scene_det_bridge.py",
+      "sha256": "51fe357ea25342c0bebe6ad9d7207e92d41f480fe3dca50615ad0d82e98053d8"
+    },
+    {
+      "path": "models/unified_model.py",
+      "sha256": "629eac3267e8c24ec6e86a0c68a37a87cfde1d5588c3ad8d83dde606e4ca0ede"
+    },
+    {
+      "path": "scripts/balance_dataset.py",
+      "sha256": "293f4c92b8ca2846c38e9206de27e8cc5610237a03a35473890f3dee9edb1804"
+    },
+    {
+      "path": "scripts/benchmark_backbone_candidates.py",
+      "sha256": "25ec8aaa1f0f052f0f668dee627a052d63c8515a6cd85af233648bd1db871107"
+    },
+    {
+      "path": "scripts/build_bbox_metadata.py",
+      "sha256": "ebad6adc1c782e71e1dbd769c34efef6dc3b13679c3068eb7126d0c0f5554842"
+    },
+    {
+      "path": "scripts/build_grouped_splits.py",
+      "sha256": "0bcc7fc47e37c5f94582e68c3088fdce77d4dae7afea61412517627fda24a327"
+    },
+    {
+      "path": "scripts/build_metadata.py",
+      "sha256": "69a5beaa2fa1959f8af08dcaf19a38e70ac07f8131194b520b6bfc9cbe53b332"
+    },
+    {
+      "path": "scripts/build_public_benchmark_splits.py",
+      "sha256": "55a96bc673cc6c63dbcc5516adb1b2deddbd005996a2c822ea21293521d11f7d"
+    },
+    {
+      "path": "scripts/cache_audio_logmel.py",
+      "sha256": "a6d582f5c005996aef031b097850c83a8f5a65df16e975f1be5ba659e06e322a"
+    },
+    {
+      "path": "scripts/download_data.py",
+      "sha256": "7b252c5a24104cb52b5a0130d13c8b77bc29728f640af004c054de6a9a161981"
+    },
+    {
+      "path": "scripts/generate_conference_figures.py",
+      "sha256": "0d6b4fc3bec102532c41fee8aff5f0f7508f118acb53ee3ab276ddeed4e9f605"
+    },
+    {
+      "path": "scripts/generate_paper_qualitative_evidence.py",
+      "sha256": "307168ee038f1c7c434d7a0688311c952fdcea36c52feebd15b857f1d0ac61fd"
+    },
+    {
+      "path": "scripts/generate_pseudo_thermal.py",
+      "sha256": "430755fc8c1c222743bfafd8f6bc6f74ea0fdec726013d88387052d494a1a91c"
+    },
+    {
+      "path": "scripts/generate_qualitative_failures.py",
+      "sha256": "5e008302a19657827d76f23c5302a8748cfb3ad9e338b55c6ab8d4e6c9a621b8"
+    },
+    {
+      "path": "scripts/generate_qualitative_robustness.py",
+      "sha256": "ef0f2d3d9ba0828026c19d4c75925faf98f289520f128072704e8e61e3fc5839"
+    },
+    {
+      "path": "scripts/generate_thesis_figures.py",
+      "sha256": "975e2c5400ece587e159732ccd400663b6ddb0e09c954b25cad3ea9e8d6b32c7"
+    },
+    {
+      "path": "scripts/generate_updated_figures.py",
+      "sha256": "850589c1b6936705abe2cd0c8f3d6f2bed5adb7a749585e276ff9836f4f13f54"
+    },
+    {
+      "path": "scripts/restructure_only.py",
+      "sha256": "c7b4f85071d3e508283a377981936ec8be052abdc25a1b99da88949609fc96f3"
+    },
+    {
+      "path": "scripts/run_grouped_repeated_seeds.py",
+      "sha256": "850f5f0cf6fe95fc75bc0950a3afba0a234131c6b55dd34223679aa1f2b953b7"
+    },
+    {
+      "path": "scripts/summarize_all_results.py",
+      "sha256": "035285fe5b543c94bc0921db289ed2ebc963292670008b5057aac626c4b82eef"
+    },
+    {
+      "path": "scripts/update_backbone_results.py",
+      "sha256": "f91a3b6e0b574aa2fe8509552f9707f751cbcdeb8b594539343e4f1e753d4d06"
+    },
+    {
+      "path": "training/__init__.py",
+      "sha256": "e45ed53023b4bf93753b2fd9ad1c4fac89a26c2a64eeb888e613c4f980b90621"
+    },
+    {
+      "path": "training/losses.py",
+      "sha256": "f7b1f7ed513da4e7da139c4b845e4ef7af4c55faa0c812657062059bf647e621"
+    },
+    {
+      "path": "training/run_all.py",
+      "sha256": "4cf130effea38be86a4a0337a55f4188395a855901a6c2e8307df4ab0cd1ea0a"
+    },
+    {
+      "path": "training/run_artifacts.py",
+      "sha256": "456240f6c3f9e22d447ba36e5ad622f4d0973b806ecd4c5f88f581c9d9532c10"
+    },
+    {
+      "path": "training/train.py",
+      "sha256": "7ceb3a2595f50e6cf30bc74ac3421a83c60519723914a538f974ddc14c8e5ede"
+    },
+    {
+      "path": "training/trainer.py",
+      "sha256": "682dacbd5d0227ed6d786850b2f69561be20cff972a958503e718ad15f740700"
+    }
+  ]
+}

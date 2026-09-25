@@ -1,0 +1,82 @@
+{
+  "seed": 42,
+  "flame_block_size": 250,
+  "fractions_requested": {
+    "train": 0.7,
+    "val": 0.15,
+    "test": 0.15
+  },
+  "rows_total": 72997,
+  "rows_by_split": {
+    "test": 11097,
+    "train": 50845,
+    "val": 11055
+  },
+  "capture_groups_by_split": {
+    "test": 2002,
+    "train": 9267,
+    "val": 2003
+  },
+  "rows_by_split_and_class": {
+    "test": {
+      "0": 4615,
+      "1": 5108,
+      "2": 936,
+      "3": 438
+    },
+    "train": {
+      "0": 20740,
+      "1": 23721,
+      "2": 4350,
+      "3": 2034
+    },
+    "val": {
+      "0": 4587,
+      "1": 5094,
+      "2": 936,
+      "3": 438
+    }
+  },
+  "rows_by_split_and_source": {
+    "test": {
+      "aider": 965,
+      "c2a": 1535,
+      "esc50": 400,
+      "firenet": 90,
+      "flame": 7244,
+      "sard": 863
+    },
+    "train": {
+      "aider": 4502,
+      "c2a": 7145,
+      "esc50": 1200,
+      "firenet": 422,
+      "flame": 33547,
+      "sard": 4029
+    },
+    "val": {
+      "aider": 966,
+      "c2a": 1535,
+      "esc50": 400,
+      "firenet": 90,
+      "flame": 7201,
+      "sard": 863
+    }
+  },
+  "capture_group_overlap": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  },
+  "audio_path_overlap": {
+    "train_val": 0,
+    "train_test": 0,
+    "val_test": 0
+  },
+  "visual_audio_rows_dropped_for_missing_split_pool": 0,
+  "grouping_limitations": [
+    "FLAME has no delivered video/flight identifier; fixed contiguous frame blocks are a proxy.",
+    "AIDER and FireNet expose no capture-sequence identifier, so each image is its own group.",
+    "Audio remains label-matched rather than synchronized, but exact ESC-50 clips are split-disjoint."
+  ]
+}

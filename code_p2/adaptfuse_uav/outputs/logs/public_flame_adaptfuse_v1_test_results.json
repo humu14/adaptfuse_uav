@@ -1,0 +1,12 @@
+{
+  "experiment": "public_flame_adaptfuse_v1",
+  "test": {
+    "loss": 0.13321868368662576,
+    "disaster_f1": 0.7292576406853314,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.7552512475339446,
+    "victim_acc": 1.0,
+    "combined_f1": 0.8646288203426657,
+    "map50": 0.0
+  }
+}

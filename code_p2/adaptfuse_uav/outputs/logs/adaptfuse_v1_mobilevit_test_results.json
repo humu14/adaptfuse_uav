@@ -1,0 +1,12 @@
+{
+  "experiment": "adaptfuse_v1_mobilevit",
+  "test": {
+    "loss": 0.010297471287940693,
+    "disaster_f1": 0.9880897279432693,
+    "victim_f1": 0.9916356972265226,
+    "disaster_acc": 0.9930599945210483,
+    "victim_acc": 0.9941557848598301,
+    "combined_f1": 0.989862712584896,
+    "map50": 0.0
+  }
+}

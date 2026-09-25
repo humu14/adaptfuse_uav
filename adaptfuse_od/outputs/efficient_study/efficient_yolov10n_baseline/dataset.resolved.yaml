@@ -1,0 +1,8 @@
+path: E:\Research Projects\reserch writing\Co-Sup\adaptfuse_od\data\datasets\dfire
+train: images\train
+val: images\val
+test: images\test
+names:
+  0: fire
+  1: smoke
+nc: 2

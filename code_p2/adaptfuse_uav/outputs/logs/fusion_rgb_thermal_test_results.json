@@ -1,0 +1,12 @@
+{
+  "experiment": "fusion_rgb_thermal",
+  "test": {
+    "loss": 0.004175475901004658,
+    "disaster_f1": 0.9869818703873643,
+    "victim_f1": 0.9829597755696937,
+    "disaster_acc": 0.9897726235047027,
+    "victim_acc": 0.9880376221349648,
+    "combined_f1": 0.984970822978529,
+    "map50": 0.0
+  }
+}

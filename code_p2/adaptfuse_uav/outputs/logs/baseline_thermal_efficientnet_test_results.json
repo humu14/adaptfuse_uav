@@ -1,0 +1,12 @@
+{
+  "experiment": "baseline_thermal_efficientnet",
+  "test": {
+    "loss": 0.012645962912773518,
+    "disaster_f1": 0.9926743998555705,
+    "victim_f1": 0.9793818897267172,
+    "disaster_acc": 0.993425257967309,
+    "victim_acc": 0.9854807780111405,
+    "combined_f1": 0.9860281447911439,
+    "map50": 0.0
+  }
+}

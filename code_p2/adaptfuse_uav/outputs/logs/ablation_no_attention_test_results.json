@@ -1,0 +1,12 @@
+{
+  "experiment": "ablation_no_attention",
+  "test": {
+    "loss": 0.007645969752340682,
+    "disaster_f1": 0.9893767372897285,
+    "victim_f1": 0.9785014985508219,
+    "disaster_acc": 0.9925120993516574,
+    "victim_acc": 0.9847502511186194,
+    "combined_f1": 0.9839391179202752,
+    "map50": 0.0
+  }
+}

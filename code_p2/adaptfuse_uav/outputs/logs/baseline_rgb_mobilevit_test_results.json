@@ -1,0 +1,12 @@
+{
+  "experiment": "baseline_rgb_mobilevit",
+  "test": {
+    "loss": 0.010540349120938384,
+    "disaster_f1": 0.9882173355271595,
+    "victim_f1": 0.9915135231448041,
+    "disaster_acc": 0.9920555200438316,
+    "victim_acc": 0.994064468998265,
+    "combined_f1": 0.9898654293359819,
+    "map50": 0.0
+  }
+}

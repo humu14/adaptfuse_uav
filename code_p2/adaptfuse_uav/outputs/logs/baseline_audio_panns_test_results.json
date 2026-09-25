@@ -1,0 +1,12 @@
+{
+  "experiment": "baseline_audio_panns",
+  "test": {
+    "loss": 0.26098474527088955,
+    "disaster_f1": 0.4152561524246461,
+    "victim_f1": 0.5777367673222426,
+    "disaster_acc": 0.567345447904301,
+    "victim_acc": 0.6162907497032234,
+    "combined_f1": 0.4964964598734443,
+    "map50": 0.0
+  }
+}

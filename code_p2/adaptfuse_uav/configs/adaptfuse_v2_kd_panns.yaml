@@ -1,0 +1,39 @@
+model: adaptfuse_v2_kd
+experiment_name: adaptfuse_v2_kd_panns
+modalities: [rgb, thermal, audio]
+num_classes_disaster: 4
+num_classes_victim: 2
+
+# EXP-14 KD: PANNS-CNN6 student distilled from PANNS teacher
+# Teacher: adaptfuse_v1_panns (best.pth, Combined F1=0.9825)
+# Student: same PANNS audio backbone, proj_dim=96, width_mult=0.5
+# KD transfers logit + feature knowledge from teacher to compressed student
+audio_backbone: panns_cnn6
+rgb_backbone: mobilenet_v3_small
+thermal_backbone: resnet18
+
+use_kd: true
+kd_teacher_ckpt: outputs/checkpoints/adaptfuse_v1_panns_best.pth
+kd_temperature: 4.0
+kd_lambda: 0.5
+width_multiplier: 0.5
+
+batch_size: 16
+epochs: 50
+lr: 1e-3
+weight_decay: 1e-4
+use_focal_loss: true
+use_balanced: true
+use_balanced_half: true
+corruption_prob: 0.3
+missing_modality_prob: 0.2
+scheduler: CosineAnnealingLR
+T_max: 50
+min_lr: 1e-5
+warmup_epochs: 5
+num_workers: 4
+seed: 42
+device: cuda
+output_dir: outputs/
+early_stopping: true
+early_stopping_patience: 15

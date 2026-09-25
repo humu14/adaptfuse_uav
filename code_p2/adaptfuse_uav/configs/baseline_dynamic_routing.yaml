@@ -1,0 +1,38 @@
+# Unbiased Dynamic Multimodal Fusion (CVPR 2026 Style) External Baseline
+# Dynamic Soft Router across RGB + Thermal + Audio with modal balance regularizer.
+
+experiment_name: "baseline_dynamic_routing"
+model: "dynamic_routing"
+
+num_classes_disaster: 4
+num_classes_victim: 2
+proj_dim: 192
+dropout: 0.2
+
+# Data
+data_path: "data/unified_dataset.csv"
+batch_size: 16
+num_workers: 4
+use_balanced_subset: true
+balanced_subset_size: 49276
+
+# Corruption & augmentation
+corruption_prob: 0.3
+missing_modality_prob: 0.2
+
+# Training
+optimizer: "AdamW"
+lr: 0.001
+weight_decay: 0.0001
+warmup_epochs: 5
+max_epochs: 50
+patience: 15
+use_amp: true
+
+# Loss
+loss_type: "focal"
+focal_alpha: 0.25
+focal_gamma: 2.0
+loss_weights:
+  disaster: 1.0
+  victim: 0.5

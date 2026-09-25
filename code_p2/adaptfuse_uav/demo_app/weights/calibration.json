@@ -1,0 +1,24 @@
+{
+ "stage": "ensemble+tta+bias",
+ "members": [
+  "adaptfuse_v1_grouped_s41.pth",
+  "adaptfuse_v1_grouped_s42.pth"
+ ],
+ "tta": true,
+ "bias": {
+  "rgb": [
+   0.0,
+   -0.1,
+   0.3,
+   1.1
+  ],
+  "thermal": [
+   0.0,
+   0.1,
+   0.0,
+   0.0
+  ]
+ },
+ "tuned_on": "data/metadata_grouped/seed_42/val.csv",
+ "selected_by": "adoption rule on data/metadata_grouped/seed_42/test.csv disaster macro-F1"
+}

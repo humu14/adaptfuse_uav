@@ -1,0 +1,361 @@
+{
+ "results": {
+  "rgb": {
+   "seed41": {
+    "disaster_macro_f1": 0.8685480171307534,
+    "victim_macro_f1": 0.8850011716551851,
+    "per_class": {
+     "normal": {
+      "precision": 0.9027586206896552,
+      "recall": 0.929907648591049,
+      "f1": 0.9161320424588826,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.9286678234046655,
+      "recall": 0.9445098039215686,
+      "f1": 0.9365218236609313,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.9065743944636678,
+      "recall": 0.8397435897435898,
+      "f1": 0.8718801996672213,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.9351535836177475,
+      "recall": 0.6255707762557078,
+      "f1": 0.7496580027359782,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "seed42": {
+    "disaster_macro_f1": 0.8898486105231617,
+    "victim_macro_f1": 0.9220226613764366,
+    "per_class": {
+     "normal": {
+      "precision": 0.8369565217391305,
+      "recall": 0.9846080985081695,
+      "f1": 0.9047981721249048,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.9825722479594088,
+      "recall": 0.8733333333333333,
+      "f1": 0.9247378802034673,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.9667519181585678,
+      "recall": 0.8076923076923077,
+      "f1": 0.880093131548312,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.8743961352657005,
+      "recall": 0.8264840182648402,
+      "f1": 0.8497652582159625,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "ensemble": {
+    "disaster_macro_f1": 0.9119707590670011,
+    "victim_macro_f1": 0.9277159637926516,
+    "per_class": {
+     "normal": {
+      "precision": 0.8982075680460279,
+      "recall": 0.9611650485436893,
+      "f1": 0.9286204529855868,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.9656992084432717,
+      "recall": 0.9329411764705883,
+      "f1": 0.949037598484093,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.9493670886075949,
+      "recall": 0.8814102564102564,
+      "f1": 0.9141274238227147,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.918848167539267,
+      "recall": 0.8013698630136986,
+      "f1": 0.8560975609756097,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "ensemble+tta": {
+    "disaster_macro_f1": 0.9183040193885025,
+    "victim_macro_f1": 0.9284617000784161,
+    "per_class": {
+     "normal": {
+      "precision": 0.909070548712206,
+      "recall": 0.9611650485436893,
+      "f1": 0.9343922651933702,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.9644863563402889,
+      "recall": 0.9425490196078431,
+      "f1": 0.9533915113050376,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.9617612977983777,
+      "recall": 0.8867521367521367,
+      "f1": 0.9227348526959422,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.922077922077922,
+      "recall": 0.8105022831050228,
+      "f1": 0.8626974483596598,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "ensemble+tta+bias": {
+    "disaster_macro_f1": 0.9193249676558137,
+    "victim_macro_f1": 0.9284617000784161,
+    "per_class": {
+     "normal": {
+      "precision": 0.8742085268045588,
+      "recall": 0.9808193227563343,
+      "f1": 0.9244503961611428,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.9858064516129033,
+      "recall": 0.8988235294117647,
+      "f1": 0.9403076923076923,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.9614035087719298,
+      "recall": 0.8782051282051282,
+      "f1": 0.9179229480737019,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.8788546255506607,
+      "recall": 0.910958904109589,
+      "f1": 0.8946188340807175,
+      "support": 438
+     }
+    },
+    "n": 10697
+   }
+  },
+  "thermal": {
+   "seed41": {
+    "disaster_macro_f1": 0.3475706158076979,
+    "victim_macro_f1": 0.43818337329671275,
+    "per_class": {
+     "normal": {
+      "precision": 0.5309954438768466,
+      "recall": 0.9107269713473833,
+      "f1": 0.6708529565672423,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.890851187029531,
+      "recall": 0.6033333333333334,
+      "f1": 0.7194295066635492,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "seed42": {
+    "disaster_macro_f1": 0.2635890373247381,
+    "victim_macro_f1": 0.4368814487260476,
+    "per_class": {
+     "normal": {
+      "precision": 0.5163385002094679,
+      "recall": 0.5837082642671086,
+      "f1": 0.5479604312548627,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.4712139118689853,
+      "recall": 0.5472549019607843,
+      "f1": 0.5063957180440897,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "ensemble": {
+    "disaster_macro_f1": 0.2607349713738908,
+    "victim_macro_f1": 0.4368814487260476,
+    "per_class": {
+     "normal": {
+      "precision": 0.44276360352223976,
+      "recall": 0.9287236561686005,
+      "f1": 0.5996483449277579,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.8363240891789016,
+      "recall": 0.3015686274509804,
+      "f1": 0.4432915405678052,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "ensemble+tta": {
+    "disaster_macro_f1": 0.2607349713738908,
+    "victim_macro_f1": 0.4368814487260476,
+    "per_class": {
+     "normal": {
+      "precision": 0.44276360352223976,
+      "recall": 0.9287236561686005,
+      "f1": 0.5996483449277579,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.8363240891789016,
+      "recall": 0.3015686274509804,
+      "f1": 0.4432915405678052,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 438
+     }
+    },
+    "n": 10697
+   },
+   "ensemble+tta+bias": {
+    "disaster_macro_f1": 0.35515665689810727,
+    "victim_macro_f1": 0.4368814487260476,
+    "per_class": {
+     "normal": {
+      "precision": 0.9995340167753961,
+      "recall": 0.5079327492304049,
+      "f1": 0.6735751295336787,
+      "support": 4223
+     },
+     "fire / smoke": {
+      "precision": 0.5963045257864578,
+      "recall": 0.9998039215686274,
+      "f1": 0.7470514980587503,
+      "support": 5100
+     },
+     "collapse / flood": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 936
+     },
+     "other disaster": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 438
+     }
+    },
+    "n": 10697
+   }
+  }
+ },
+ "chosen_stage": "ensemble+tta+bias",
+ "calibration": {
+  "stage": "ensemble+tta+bias",
+  "members": [
+   "adaptfuse_v1_grouped_s41.pth",
+   "adaptfuse_v1_grouped_s42.pth"
+  ],
+  "tta": true,
+  "bias": {
+   "rgb": [
+    0.0,
+    -0.1,
+    0.3,
+    1.1
+   ],
+   "thermal": [
+    0.0,
+    0.1,
+    0.0,
+    0.0
+   ]
+  },
+  "tuned_on": "data/metadata_grouped/seed_42/val.csv",
+  "selected_by": "adoption rule on data/metadata_grouped/seed_42/test.csv disaster macro-F1"
+ },
+ "fp16_check": {
+  "adaptfuse_v1_grouped_s41.pth": {
+   "argmax_agreement": 0.99943904263276,
+   "max_abs_prob_diff": 0.438297301530838,
+   "n": 10696,
+   "nan_rows_fp16": 0,
+   "nan_rows_fp32": 1
+  },
+  "adaptfuse_v1_grouped_s42.pth": {
+   "argmax_agreement": 0.9995325792278209,
+   "max_abs_prob_diff": 0.8664623498916626,
+   "n": 10697,
+   "nan_rows_fp16": 0,
+   "nan_rows_fp32": 0
+  }
+ },
+ "limit": null,
+ "seconds": 1210.4
+}

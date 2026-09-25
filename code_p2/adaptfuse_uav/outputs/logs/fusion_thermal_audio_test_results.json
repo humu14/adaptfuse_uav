@@ -1,0 +1,12 @@
+{
+  "experiment": "fusion_thermal_audio",
+  "test": {
+    "loss": 0.00577014853850879,
+    "disaster_f1": 0.9879600937705896,
+    "victim_f1": 0.9729743203621799,
+    "disaster_acc": 0.9912336772897452,
+    "victim_acc": 0.9809149849328829,
+    "combined_f1": 0.9804672070663847,
+    "map50": 0.0
+  }
+}

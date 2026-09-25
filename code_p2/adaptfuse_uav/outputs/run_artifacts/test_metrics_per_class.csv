@@ -1,0 +1,7 @@
+task,class_id,class_name,precision,recall,f1,support
+disaster,0,clean,0.7778678556951764,0.5514367816091954,0.645367412140575,3480
+disaster,1,fire_smoke,0.7461788617886179,0.893322951138797,0.8131478692300877,5137
+disaster,2,collapse_flood,0.0,0.0,0.0,0
+disaster,3,other_hazard,0.0,0.0,0.0,0
+victim,0,absent,1.0,1.0,1.0,8617
+victim,1,present,0.0,0.0,0.0,0

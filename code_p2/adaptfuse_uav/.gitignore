@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Environments
+.env
+.venv/
+venv/
+env/
+conda-env/
+*.conda
+
+# Model weights & checkpoints (too large; regenerate via training)
+outputs/checkpoints/
+# keep the small *_results.json / *_history.json files the thesis cites; drop raw run logs
+outputs/logs/*.log
+
+# Raw datasets (too large; use scripts/download_data.py to fetch)
+datasets/raw/
+
+# Generated data (regenerate via scripts/generate_pseudo_thermal.py)
+datasets/pseudo_thermal/
+datasets/processed/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Experiment tracking
+wandb/
+mlruns/
+lightning_logs/
+
+# Misc outputs
+*.log
+*.tmp
+
+# Demo app runtime files
+demo_app/uploads/

@@ -1,0 +1,19 @@
+# EfficientDet-D0 — Compound-scaled detector with BiFPN
+experiment_name: "benchmark_efficientdet_d0"
+
+model:
+  architecture: "efficientdet_d0"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire"
+  image_size: 512
+
+training:
+  epochs: 100
+  batch_size: 8
+  lr: 0.001
+  optimizer: "AdamW"
+  weight_decay: 0.00004
+  early_stopping_patience: 20

@@ -1,0 +1,61 @@
+{
+  "experiment": "adaptfuse_v1",
+  "config": {
+    "model": "adaptfuse_v1",
+    "modalities": [
+      "rgb",
+      "thermal",
+      "audio"
+    ],
+    "num_classes_disaster": 4,
+    "num_classes_victim": 2,
+    "batch_size": 16,
+    "epochs": 50,
+    "lr": "1e-3",
+    "weight_decay": "1e-4",
+    "use_focal_loss": true,
+    "use_balanced": true,
+    "use_balanced_half": true,
+    "use_kd": false,
+    "kd_teacher_ckpt": null,
+    "corruption_prob": 0.3,
+    "missing_modality_prob": 0.2,
+    "scheduler": "CosineAnnealingLR",
+    "T_max": 50,
+    "min_lr": "1e-5",
+    "warmup_epochs": 5,
+    "num_workers": 4,
+    "seed": 42,
+    "device": "cuda",
+    "output_dir": "outputs/",
+    "experiment_name": "adaptfuse_v1",
+    "early_stopping": true,
+    "early_stopping_patience": 15
+  },
+  "standard": {
+    "disaster_accuracy": 0.9944297324445256,
+    "disaster_f1_macro": 0.9912683395845754,
+    "disaster_f1_weighted": 0.994440076058911,
+    "disaster_precision_macro": 0.9869512978736509,
+    "disaster_recall_macro": 0.9956951838446837,
+    "disaster_auroc": 0.0,
+    "victim_accuracy": 0.9884028855812255,
+    "victim_f1_macro": 0.9835730906853974,
+    "victim_f1_weighted": 0.9884655151209659,
+    "victim_precision_macro": 0.9784736741975397,
+    "victim_recall_macro": 0.9889231461301858,
+    "avg_reliability": [
+      0.9721486568450928,
+      0.9721486568450928,
+      0.005903178825974464
+    ],
+    "false_positive_rate": 0.007346393588601959,
+    "ece": 0.03370455965779385
+  },
+  "latency": {
+    "params": 12937044,
+    "params_M": 12.937044,
+    "latency_ms": 12.098388000013074,
+    "fps": 82.6556397429905
+  }
+}

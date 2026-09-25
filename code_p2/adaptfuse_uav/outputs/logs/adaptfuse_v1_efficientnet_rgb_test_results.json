@@ -1,0 +1,12 @@
+{
+  "experiment": "adaptfuse_v1_efficientnet_rgb",
+  "test": {
+    "loss": 0.002548265872578808,
+    "disaster_f1": 0.992330476442115,
+    "victim_f1": 0.9924328658365142,
+    "disaster_acc": 0.9939731531366999,
+    "victim_acc": 0.994703680029221,
+    "combined_f1": 0.9923816711393146,
+    "map50": 0.0
+  }
+}

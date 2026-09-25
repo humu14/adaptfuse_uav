@@ -1,0 +1,12 @@
+{
+  "experiment": "uni_adaptfuse_v2",
+  "test": {
+    "loss": 0.0,
+    "disaster_f1": 0.9919745074009855,
+    "victim_f1": 0.9793801869568741,
+    "disaster_acc": 0.9926034152132225,
+    "victim_acc": 0.9855720938727057,
+    "combined_f1": 0.9856773471789297,
+    "map50": 0.0
+  }
+}

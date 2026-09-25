@@ -1,0 +1,12 @@
+{
+  "experiment": "ablation_no_quality_tokens",
+  "test": {
+    "loss": 0.010767753489545385,
+    "disaster_f1": 0.988052392274196,
+    "victim_f1": 0.979973867472391,
+    "disaster_acc": 0.9926947310747877,
+    "victim_acc": 0.9858460414574012,
+    "combined_f1": 0.9840131298732935,
+    "map50": 0.0
+  }
+}

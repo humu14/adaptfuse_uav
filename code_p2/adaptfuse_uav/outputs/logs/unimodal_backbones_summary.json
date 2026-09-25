@@ -1,0 +1,14 @@
+{
+  "baseline_thermal_mobilevit": {
+    "experiment": "baseline_thermal_mobilevit",
+    "test": {
+      "loss": 0.011676530268765478,
+      "disaster_f1": 0.9905114695419861,
+      "victim_f1": 0.9787610465104588,
+      "disaster_acc": 0.9917815724591361,
+      "victim_acc": 0.9851155145648799,
+      "combined_f1": 0.9846362580262225,
+      "map50": 0.0
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "rgb": [
+    {
+      "severity": 0,
+      "corruption": "smoke_overlay",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0059
+    },
+    {
+      "severity": 1,
+      "corruption": "smoke_overlay",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.006
+    },
+    {
+      "severity": 3,
+      "corruption": "smoke_overlay",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0071
+    },
+    {
+      "severity": 5,
+      "corruption": "smoke_overlay",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0108
+    }
+  ],
+  "thermal": [
+    {
+      "severity": 0,
+      "corruption": "thermal_drift",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0059
+    },
+    {
+      "severity": 1,
+      "corruption": "thermal_drift",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0059
+    },
+    {
+      "severity": 3,
+      "corruption": "thermal_drift",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0058
+    },
+    {
+      "severity": 5,
+      "corruption": "thermal_drift",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0058
+    }
+  ],
+  "audio": [
+    {
+      "severity": 0,
+      "corruption": "rotor_noise_snr",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0059
+    },
+    {
+      "severity": 1,
+      "corruption": "rotor_noise_snr",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0059
+    },
+    {
+      "severity": 3,
+      "corruption": "rotor_noise_snr",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0059
+    },
+    {
+      "severity": 5,
+      "corruption": "rotor_noise_snr",
+      "r_rgb": 0.9721,
+      "r_thermal": 0.9721,
+      "r_audio": 0.0058
+    }
+  ]
+}

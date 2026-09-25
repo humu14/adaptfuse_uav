@@ -1,0 +1,11 @@
+{
+  "experiment": "adaptfuse_v1_gdblock",
+  "test": {
+    "loss": 0.0035575975608213295,
+    "disaster_f1": 0.9888101288963524,
+    "victim_f1": 0.9837540799645458,
+    "disaster_acc": 0.9924207834900922,
+    "victim_acc": 0.9885855173043557,
+    "combined_f1": 0.9862821044304491
+  }
+}

@@ -1,0 +1,144 @@
+%*******************************************************************
+% Chapter 3: Requirements, Impacts and Constraints
+%*******************************************************************
+
+\section{Final Specifications and Requirements}
+
+This section establishes the concrete hardware, software, and data requirements that the UniAdapFuse system must satisfy. These specifications are derived from operational disaster-response constraints rather than idealised laboratory conditions, ensuring that design decisions remain grounded in real-world deployability. They are target specifications set at the planning stage, not results; Table~\ref{tab:req_trace} in the Conclusion reports which of them our system meets.
+
+\subsection{Technical Requirements}
+\label{sec:tech_requirements}
+
+\textbf{Sensor Hardware Requirements:}
+\begin{itemize}
+    \item \textbf{RGB Camera:} Minimum 1920$\times$1080 resolution at 30 FPS; field of view $\geq 80^{\circ}$; electronic image stabilisation to mitigate rotor vibration blur
+    \item \textbf{Thermal Infrared Camera:} Minimum 320$\times$240 resolution at 10 FPS; NETD $\leq$50\,mK; spectral band 7.5--14\,$\mu$m (LWIR); operating range $-20$\,\textdegree{}C to $+550$\,\textdegree{}C
+    \item \textbf{Acoustic Module:} 2-element microphone array (minimum), sampling rate 16 kHz; SNR $\geq$60 dB; vibration isolation mount to suppress rotor-induced mechanical noise
+    \item \textbf{Edge Compute Payload (Target Specification):} Low-power embedded edge GPU (minimum 8 GB RAM); TDP $\leq$15 W; operating temperature $-25$\,\textdegree C to $+80$\,\textdegree C; mass $\leq 280$\,g
+\end{itemize}
+
+\textbf{Software and Algorithm Requirements:}
+\begin{itemize}
+    \item End-to-end inference latency $\leq$500 ms from sensor capture to classification output at 10 FPS
+    \item Detection accuracy $\geq$95\% for wildfire scenes (RGB+thermal fusion); $\geq$90\% for USAR victim detection across all lighting conditions
+    \item False positive rate $\leq$8\% under operational conditions including solar heating, dust, glare, and rotor noise
+    \item Graceful degradation: system must maintain $\geq$85\% accuracy when any single modality is unavailable
+    \item INT8 quantisation-aware inference for all modality encoders
+    \item Timestamp alignment tolerance $\leq$50 ms across all sensor streams
+\end{itemize}
+
+\textbf{Data Requirements:}
+\begin{itemize}
+    \item Curated multimodal dataset: $\geq$6,000 synchronised (RGB, thermal, audio) sequences covering wildfire and USAR scenarios
+    \item Balanced class ratio with minimum 40\% negative samples to avoid overfitting
+    \item Training/validation/test split: 70\%/15\%/15\%, stratified by scenario type and environmental condition
+    \item Augmentation pipeline supporting synthetic degradation: smoke occlusion, sensor dropout, rotor noise injection
+\end{itemize}
+
+\subsection{Functional Requirements}
+
+The system shall perform three primary functions that together constitute the disaster detection pipeline.
+
+\begin{enumerate}
+    \item \textbf{Disaster Detection:} Binary classification (disaster present / absent) with per-class confidence scores for fire, smoke, and structural collapse
+    \item \textbf{Victim/Help-Signal Detection:} Detection of human body, waving gesture, and distress audio events with individual confidence scores
+    \item \textbf{Modality Reliability Estimation:} Online estimation of per-modality reliability scores $r_i \in [0,1]$ used as inputs to the adaptive attention gating network
+\end{enumerate}
+
+\section{Societal Impact}
+
+The proposed framework targets measurable improvements in disaster response outcomes by enabling faster, more reliable detection from UAV platforms. Early wildfire detection reduces spread area by 40--60\% and economic damage by up to 75\%~\cite{merino2012unmanned}. In USAR contexts, survival probability decreases sharply with elapsed time: rescue operations within 24 hours yield $\sim$90\% victim survival, compared to $\sim$25\% after 72 hours~\cite{erdelj2017help}. Sub-500 ms onboard inference directly targets these critical time windows.
+
+Reliable automated detection also reduces the burden on emergency dispatch infrastructure. Current RGB-only fire detection systems generate 12--18\% false positive rates, causing hundreds of unnecessary dispatches per year in monitored regions. Each unnecessary deployment consumes personnel time, fuel, and response capacity elsewhere. Reducing false positives to $\leq$8\% in the field would translate to saved resources and improved operator trust; the 0.73\% false-positive rate reported in Chapter~5 is a row-level test statistic, not an operational field rate.
+
+The framework also benefits remote and underserved communities where ground-based sensor networks are economically infeasible and satellite revisit cycles (5--16 days) are insufficient for active disaster monitoring.
+
+\section{Environmental Impact}
+
+This section considers both the positive environmental effects of earlier disaster detection and the energy footprint of the proposed system itself.
+
+\textbf{Positive environmental effects:} Earlier wildfire detection limits uncontrolled burn area and associated carbon emissions. A fire detected 30 minutes earlier than conventional methods can be engaged while it is still small, limiting the area burned before suppression begins, with commensurate reductions in CO$_2$, particulate matter, and volatile organic compound emissions.
+
+\textbf{Energy considerations:} The planned onboard edge-compute module (target $\leq$10--15 W) would consume substantially less energy than cloud-inference pipelines that require continuous high-bandwidth uplink. INT8 quantised inference reduces compute energy per frame by approximately 4$\times$ relative to FP32, extending UAV flight time by an estimated 8--12\%.
+
+\textbf{Manufacturing impact:} The sensor payload (RGB camera, thermal module, microphone array, edge compute module) adds approximately 600--900 g to UAV payload. This manufacturing footprint is offset across repeated operational deployments over the system lifetime.
+
+\section{Ethical Issues}
+
+Deploying UAV-based detection systems in populated and disaster-affected areas raises several ethical considerations that must be addressed in system design and operational policy.
+
+\textbf{Aerial privacy:} UAV-mounted cameras operating over populated areas capture incidental imagery of individuals not involved in disaster scenarios. Mitigations include: strict data retention limits (raw sensor streams purged within 72 hours); on-device inference ensuring raw imagery is not transmitted externally; and operational policies restricting UAV flights to declared disaster zones with appropriate authority clearance.
+
+\textbf{Algorithmic fairness:} Victim detection models trained predominantly on Western disaster datasets may exhibit performance disparities across demographic groups. Systematic evaluation across skin tones, body sizes, and cultural clothing is required before operational deployment.
+
+\textbf{Automation of life-critical decisions:} Detection outputs must support human emergency managers rather than trigger autonomous action. The system is intended to provide calibrated confidence scores to enable informed human oversight; calibration is measured only on the row-level test split (ECE 0.0337) and has not been validated in the field.
+
+\textbf{Dual-use risk:} Surveillance technology developed for disaster detection could be repurposed for unauthorised monitoring. Deployment policies, audit logging, and hardware tamper-evidence mechanisms are required in institutional deployments.
+
+\section{Standards}
+
+The system design conforms to the following applicable standards, ensuring compatibility with existing emergency management infrastructure and regulatory frameworks.
+
+\begin{itemize}
+    \item \textbf{IEEE 1512:} Standard for Common Incident Management Message Sets for Emergency Management Centers; governs detection output data formats
+    \item \textbf{ISO 9001:2015:} Quality management requirements applied to dataset curation, annotation, and model evaluation
+    \item \textbf{STANAG 4586 / NATO UAVNET:} UAV interoperability standards for data link protocols and payload command interfaces
+    \item \textbf{IEC 62443:} Industrial cybersecurity standard applied to UAV-to-ground-station communication to prevent adversarial interference
+    \item \textbf{RTCA DO-178C:} Software considerations for airborne systems; applied to safety-critical inference pipeline components
+\end{itemize}
+
+\section{Project Management Plan}
+
+This section outlines the planned development phases and resource requirements for the UniAdapFuse project, along with a risk register identifying key threats to successful completion. Table~\ref{tab:project_schedule} lists the five development phases and their corresponding deliverables.
+
+\begin{table}[H]
+\centering
+\caption{Project Milestones and Deliverables}
+\label{tab:project_schedule}
+\begin{tabular}{@{}lp{8cm}@{}}
+\toprule
+\textbf{Phase} & \textbf{Deliverable} \\
+\midrule
+Phase 1: Dataset Curation      & Curated multimodal dataset ($\geq$6,000 sequences), annotation pipeline, quality audit \\
+Phase 2: Architecture Design   & Modality encoder implementations, attention fusion module, training scripts \\
+Phase 3: Training \& Ablation  & Trained baseline and ablation models, accuracy and latency benchmarks \\
+Phase 4: Edge Optimisation     & INT8 quantised models, TensorRT deployment pipeline, projected edge hardware latency profiles \\
+Phase 5: Evaluation \& Writing & Full evaluation results, thesis chapters, submitted manuscript \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Resource allocation:} Primary compute resources comprise one NVIDIA RTX 5090 workstation (32\,GB VRAM) for model training and simulation. Physical deployment onto dedicated embedded edge hardware is reserved for future operational benchmarking. Dataset storage requires approximately 2 TB. No field data collection hardware is required as the dataset leverages publicly available sources augmented synthetically.
+
+\section{Risk Management}
+
+Risk management is essential for a project that combines hardware integration, novel deep learning, and operational deployment constraints. Table~\ref{tab:risk_register} summarises key risks, their estimated likelihood and impact, and the planned mitigations.
+
+\begin{table}[H]
+\centering
+\caption{Project Risk Register}
+\label{tab:risk_register}
+\begin{tabular}{@{}p{4cm}ccp{4.5cm}@{}}
+\toprule
+\textbf{Risk} & \textbf{Likelihood} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrule
+Dataset class imbalance & High & High & Focal Loss; oversampling; synthetic augmentation \\
+Latency target not met post-quantisation & Medium & High & QAT from training start; structured pruning fallback \\
+Rotor noise rendering audio unusable & Medium & Medium & Spectral subtraction; treat audio as optional; ablation without audio. \textit{Risk materialised}: audio-only F1 = 38.2\%; PANNS backbone experiment points to a data-alignment bottleneck \\
+Domain shift between synthetic and real data & High & Medium & Domain randomisation; held-out real-world test set \\
+Thermal false positives from solar heating & Medium & Medium & Time-of-day conditioning; joint RGB+thermal decision boundary \\
+Compute hardware failure & Low & High & Cloud training backup; checkpoints every 5 epochs \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Economic Analysis}
+
+A cost analysis based on the assumptions below suggests that the UniAdapFuse system could offer a favourable return on investment relative to existing disaster monitoring infrastructure.
+
+\textbf{Development costs:} Estimated compute time amounts to 120 GPU-hours on the available training workstation (at cloud-equivalent rates of $\sim$\$0.30/hour), plus dataset storage (\$50/month). Total estimated development compute cost: \$300--\$500.
+
+\textbf{Deployment cost per UAV:} Sensor payload (thermal \$800--\$2,000; RGB camera \$300; microphone array \$50; edge compute module \$400) totals \$1,550--\$2,750. The medium-class UAV platform (\$8,000--\$15,000) is the dominant cost. Compared to fixed ground sensor networks (\$50,000--\$200,000 per installation), UAV-based deployment provides substantially better cost-per-covered-area for active disaster monitoring.
+
+\textbf{Benefit estimation:} Assuming that 30\% of dispatches are avoidable false alarms in a region with 100 dispatch events per year, at \$5,000 saved per avoided dispatch, the system generates approximately \$150,000 in avoided costs annually, recovering deployment cost within the first operational year.
+

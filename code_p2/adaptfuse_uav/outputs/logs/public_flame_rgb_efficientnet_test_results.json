@@ -1,0 +1,12 @@
+{
+  "experiment": "public_flame_rgb_efficientnet",
+  "test": {
+    "loss": 0.08564443024549989,
+    "disaster_f1": 0.8285079140775733,
+    "victim_f1": 1.0,
+    "disaster_acc": 0.837182314030405,
+    "victim_acc": 1.0,
+    "combined_f1": 0.9142539570387866,
+    "map50": 0.0
+  }
+}

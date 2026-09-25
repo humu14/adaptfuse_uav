@@ -1,0 +1,52 @@
+# Accuracy-focused D-Fire experiment after the dataset audit.
+# This is intentionally separate from the completed edge-model study.
+experiment_name: "accuracy_yolo26s_clahe_640"
+output_dir: "outputs/accuracy_study"
+
+model:
+  architecture: "yolo26s"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire_clahe"
+  root: "data/datasets/dfire_clahe"
+  class_names: ["smoke", "fire"]
+  image_size: 640
+
+training:
+  epochs: 100
+  batch_size: 4
+  validation_batch_size: 4
+  optimizer: "SGD"
+  lr: 0.01
+  min_lr: 0.0001
+  weight_decay: 0.0005
+  momentum: 0.937
+  warmup_epochs: 3
+  early_stopping_patience: 20
+  num_workers: 2
+  amp: true
+  cache: "disk"
+  close_mosaic: 10
+  cos_lr: true
+  save_period: 10
+
+augmentation:
+  mosaic: 1.0
+  mixup: 0.0
+  hsv_h: 0.01
+  hsv_s: 0.5
+  hsv_v: 0.3
+  flip_lr: 0.5
+  flip_ud: 0.0
+  scale: 0.5
+  translate: 0.1
+  degrees: 0.0
+  perspective: 0.0
+
+evaluation:
+  run_test_after_training: true
+  batch_size: 4
+  map_conf_threshold: 0.001
+  nms_iou_threshold: 0.7

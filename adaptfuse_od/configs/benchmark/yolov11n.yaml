@@ -1,0 +1,17 @@
+# YOLOv11 Nano — Latest SOTA with C3k2 blocks
+experiment_name: "benchmark_yolov11n"
+
+model:
+  architecture: "yolov11n"
+  pretrained: true
+  num_classes: 2
+
+dataset:
+  name: "dfire"
+  image_size: 640
+
+training:
+  epochs: 100
+  batch_size: 16
+  lr: 0.001
+  early_stopping_patience: 20
