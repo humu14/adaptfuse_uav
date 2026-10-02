@@ -1,0 +1,44 @@
+{
+ "bias": {
+  "rgb": [
+   0.0,
+   -1.0,
+   1.75,
+   -1.5,
+   -1.75,
+   -2.0,
+   -3.0,
+   -3.0
+  ],
+  "thermal": [
+   0.0,
+   0.75,
+   1.5,
+   0.0,
+   -3.0,
+   -2.25,
+   -3.0,
+   -2.75
+  ]
+ },
+ "fusion_weight": {
+  "rgb": 0.35,
+  "thermal": 0.4
+ },
+ "temperature": {
+  "rgb": {
+   "adaptfuse": 0.85,
+   "zero_shot": 1.2
+  },
+  "thermal": {
+   "adaptfuse": 1.5,
+   "zero_shot": 1.5
+  }
+ },
+ "zone": {
+  "gate": 0.25,
+  "thr": 0.5,
+  "min_frac": 0.02
+ },
+ "tuned_on": "data/metadata_grouped/seed_42/val.csv (stratified subset)"
+}

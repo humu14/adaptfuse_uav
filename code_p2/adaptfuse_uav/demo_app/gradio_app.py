@@ -31,7 +31,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 from engine import Analyzer, detect_modality, extract_audio, load_models, video_info  # noqa: E402
-from engine.labels import DISASTER_CLASSES  # noqa: E402
+from engine.labels import COCO_KEEP, DISASTER_CLASSES, HAZARD_NAMES  # noqa: E402
 from engine.render import render_frame  # noqa: E402
 
 OUT_H = 540                       # annotated video height (panel layout assumes >= 480)
@@ -55,35 +55,54 @@ def _even(x: int) -> int:
     return x - (x % 2)
 
 
+VEHICLES = [v for v in COCO_KEEP.values() if v != "person"]
+
+
+def _n(r: dict, cls: str) -> int:
+    return sum((b["cls"] in VEHICLES) if cls == "vehicle" else (b["cls"] == cls) for b in r["boxes"])
+
+
+def _sound(r: dict) -> str:
+    a = r["audio"]
+    return a["headline"]["name"] if a.get("status") == "ok" else a.get("status", "none")
+
+
 def _timeline_plot(rows: list, path: Path) -> Path:
     t = [r["t"] for r in rows]
-    fig, axes = plt.subplots(3, 1, figsize=(10, 7), sharex=True)
+    fig, axes = plt.subplots(4, 1, figsize=(10, 9), sharex=True)
     for name in DISASTER_CLASSES:
         axes[0].plot(t, [r["disaster"]["probs"][name] for r in rows], label=name)
     axes[0].plot(t, [r["victim"]["probs"]["victim present"] for r in rows], "k--", label="victim present")
     axes[0].set_ylabel("probability"); axes[0].set_ylim(0, 1.02)
     axes[0].legend(loc="upper right", fontsize=8, ncol=3); axes[0].set_title("Scene classification")
+    for name in HAZARD_NAMES[1:]:
+        axes[1].plot(t, [r["event"]["probs"][name] for r in rows], label=name)
+    axes[1].set_ylabel("hazard type"); axes[1].set_ylim(0, 1.02); axes[1].legend(fontsize=7, ncol=4, loc="upper right")
     for k in ("rgb", "thermal", "audio"):
-        axes[1].plot(t, [r["reliability"][k] for r in rows], label=k)
-    axes[1].set_ylabel("RUE reliability"); axes[1].set_ylim(-0.02, 1.02); axes[1].legend(fontsize=8)
-    for cls in ("fire", "smoke", "person"):
-        axes[2].plot(t, [sum(b["cls"] == cls for b in r["boxes"]) for r in rows], label=cls)
-    axes[2].set_ylabel("# boxes"); axes[2].set_xlabel("time (s)"); axes[2].legend(fontsize=8)
+        axes[2].plot(t, [r["reliability"][k] for r in rows], label=k)
+    axes[2].set_ylabel("RUE reliability"); axes[2].set_ylim(-0.02, 1.02); axes[2].legend(fontsize=8)
+    for cls in ("fire", "smoke", "person", "vehicle"):
+        axes[3].plot(t, [_n(r, cls) for r in rows], label=cls)
+    axes[3].plot(t, [len(r.get("zones", [])) for r in rows], "k:", label="hazard zones")
+    axes[3].set_ylabel("# boxes"); axes[3].set_xlabel("time (s)"); axes[3].legend(fontsize=8, ncol=5)
     fig.tight_layout(); fig.savefig(path, dpi=110); plt.close(fig)
     return path
 
 
 def _summary(rows: list, info: dict, mod: dict, has_audio: bool, fps_proc: float) -> str:
     n = len(rows)
-    counts = {c: sum(r["disaster"]["label"] == c for r in rows) for c in DISASTER_CLASSES}
+    counts = {c: sum(r["event"]["label"] == c for r in rows) for c in HAZARD_NAMES}
     victim = sum(r["victim"]["index"] == 1 for r in rows)
-    peak = {c: max((sum(b["cls"] == c for b in r["boxes"]) for r in rows), default=0)
-            for c in ("fire", "smoke", "person")}
+    peak = {c: max((_n(r, c) for r in rows), default=0) for c in ("fire", "smoke", "person", "vehicle")}
+    zones = {}
+    for r in rows:
+        for z in {z["cls"] for z in r.get("zones", [])}:
+            zones[z] = zones.get(z, 0) + 1
     tags = {}
     for r in rows:
-        if r["audio"].get("status") == "ok" and r["audio"]["tags"]:
-            top = r["audio"]["tags"][0]
-            tags[top["name"]] = tags.get(top["name"], 0) + 1
+        if r["audio"].get("status") == "ok":
+            h = r["audio"]["headline"]["name"]
+            tags[h] = tags.get(h, 0) + 1
     dis = [r["agreement"]["status"] for r in rows]
     det_only, cls_only = dis.count("detector_only"), dis.count("classifier_only")
     lines = [
@@ -92,19 +111,22 @@ def _summary(rows: list, info: dict, mod: dict, has_audio: bool, fps_proc: float
         f"{'yes' if has_audio else 'no'}",
         f"**Analyzed frames:** {n} at {fps_proc:.1f} frames/s processing speed",
         "",
-        "| Scene label | share of frames |", "|---|---|",
-        *[f"| {c} | {counts[c] / max(n, 1):.0%} |" for c in DISASTER_CLASSES],
+        "| Scene | share of frames |", "|---|---|",
+        *[f"| {c} | {counts[c] / max(n, 1):.0%} |" for c in HAZARD_NAMES if counts[c]],
         "",
         f"**Victim present:** {victim / max(n, 1):.0%} of frames  ",
-        f"**Max boxes in one frame:** fire {peak['fire']}, smoke {peak['smoke']}, person {peak['person']}  ",
-        "**Most frequent sound tag:** " + (max(tags, key=tags.get) if tags else "—") + "  ",
+        f"**Max boxes in one frame:** fire {peak['fire']}, smoke {peak['smoke']}, person {peak['person']}, "
+        f"vehicle {peak['vehicle']}  ",
+        "**Hazard zones:** " + (", ".join(f"{k} ({v / max(n, 1):.0%} of frames)" for k, v in zones.items())
+                                or "none") + "  ",
+        "**Most frequent sound event:** " + (max(tags, key=tags.get) if tags else "—") + "  ",
         f"**Scene vs. detector disagreement:** {(det_only + cls_only) / max(n, 1):.0%} of analyzed frames "
         f"(detector-only {det_only / max(n, 1):.0%}, classifier-only {cls_only / max(n, 1):.0%})",
     ]
     if mod["modality"] == "thermal":
-        lines.append("\n> **Thermal-only input:** scene labels are unreliable here (grouped-test disaster "
-                     "macro-F1 well below the RGB condition; see `demo_app/eval/classifier_eval.md`), and the "
-                     "fire/smoke detector was trained on RGB (D-Fire).")
+        lines.append("\n> **Thermal input:** the fire/smoke detector was trained on RGB (D-Fire), so its boxes are "
+                     "indicative only, and hazard zones are not drawn. Scene accuracy on thermal is lower than on "
+                     "RGB (see `demo_app/eval/hazard_eval.md`).")
     return "\n".join(lines)
 
 
@@ -172,20 +194,24 @@ def analyze_video(video_path, modality_choice, stride, det_conf, person_conf, ma
     csv_path = work / f"{src.stem}_results.csv"
     with open(csv_path, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["frame", "t", "modality", "disaster", "disaster_conf", "victim", "victim_conf",
+        w.writerow(["frame", "t", "modality", "disaster", "disaster_conf", "event", "adaptfuse",
+                    "adaptfuse_conf", "victim", "victim_conf",
                     "nuisance", "rel_rgb", "rel_thermal", "rel_audio", "n_fire", "n_smoke", "n_person",
-                    "audio_status", "audio_pipeline", "audio_top_tag", "ms",
+                    "n_vehicle", "zones", "audio_status", "sound_event", "audio_pipeline", "audio_top_tag", "ms",
                     "agreement", "raw_disaster", "n_raw_boxes"])
         for r in rows:
             a = r["audio"]
+            ok = a.get("status") == "ok"
             w.writerow([r["frame"], r["t"], r["modality"], r["disaster"]["label"],
-                        f'{r["disaster"]["conf"]:.3f}', r["victim"]["label"], f'{r["victim"]["conf"]:.3f}',
+                        f'{r["disaster"]["conf"]:.3f}', r["event"]["label"], r["adaptfuse"]["label"],
+                        f'{r["adaptfuse"]["conf"]:.3f}', r["victim"]["label"], f'{r["victim"]["conf"]:.3f}',
                         r["nuisance"]["label"] if r["nuisance"] else "",
                         *(f'{r["reliability"][k]:.3f}' for k in ("rgb", "thermal", "audio")),
-                        *(sum(b["cls"] == c for b in r["boxes"]) for c in ("fire", "smoke", "person")),
-                        a.get("status"),
-                        a["pipeline"]["disaster"]["label"] if a.get("status") == "ok" else "",
-                        a["tags"][0]["name"] if a.get("status") == "ok" and a["tags"] else "",
+                        *(_n(r, c) for c in ("fire", "smoke", "person", "vehicle")),
+                        ";".join(z["cls"] for z in r.get("zones", [])),
+                        a.get("status"), _sound(r),
+                        a["pipeline"]["disaster"]["label"] if ok else "",
+                        a["top_tags"][0]["name"] if ok and a["top_tags"] else "",
                         r["timing_ms"]["total"],
                         r["agreement"]["status"], r["raw"]["disaster"]["label"], len(r["raw_boxes"])])
     plot = _timeline_plot(rows, work / "timeline.png")
@@ -194,14 +220,11 @@ def analyze_video(video_path, modality_choice, stride, det_conf, person_conf, ma
 
 
 MODEL_NOTE = """
-**Where each output comes from.** Scene, victim and nuisance labels and the RUE reliability
-bars come from an ensemble of two **AdapFuse-V1** models (grouped split, seeds 41 + 42, flip TTA,
-class calibration; see `demo_app/eval/classifier_eval.md`), trained in the AdapFuse-UAV pipeline.
-The audio-only label comes from the pipeline's AudioCNN baseline. Fire and smoke boxes come from
-**YOLO26s fine-tuned on CLAHE D-Fire** (test mAP@50 0.771). **Person boxes** come from the
-COCO-pretrained YOLO26n, and **sound tags** from the AudioSet-pretrained PANNs Cnn6; neither was
-fine-tuned in this work. Labels are smoothed over ~1 s; boxes are drawn once they persist for
-2 of 3 analyzed frames; *models disagree* marks frames where scene and boxes contradict.
+**Reading the output.** The scene names the hazard in view (collapsed building, flood, landslide,
+fire, smoke, explosion, traffic accident or normal). Solid boxes are detected objects (fire, smoke,
+people, vehicles); dashed regions with a tint are hazard zones. Labels are smoothed over ~1 s,
+boxes are drawn once they persist for 2 of 3 analyzed frames, and *models disagree* marks frames
+where the scene label and the fire/smoke boxes contradict. Model details: `demo_app/README.md`.
 """
 
 
@@ -215,7 +238,7 @@ def build_ui() -> gr.Blocks:
                 modality = gr.Radio(["auto", "rgb", "thermal"], value="auto", label="Input modality")
                 stride = gr.Slider(1, 10, value=1, step=1, label="Analyze every N-th frame")
                 det_conf = gr.Slider(0.05, 0.9, value=0.25, step=0.05, label="Fire/smoke confidence")
-                person_conf = gr.Slider(0.05, 0.9, value=0.35, step=0.05, label="Person confidence")
+                person_conf = gr.Slider(0.05, 0.9, value=0.35, step=0.05, label="People / vehicles confidence")
                 max_s = gr.Number(value=0, label="Only first N seconds (0 = whole video)")
                 run = gr.Button("Analyze", variant="primary")
                 samples = sorted((Path(__file__).resolve().parent / "samples").glob("*.mp4"))

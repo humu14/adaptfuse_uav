@@ -7,15 +7,23 @@ const ctx = overlay.getContext("2d");
 const grab = document.createElement("canvas");
 const gctx = grab.getContext("2d");
 
-const COLORS = { fire: "#ff5a3c", smoke: "#b8bec7", person: "#3ecf6e" };
+const VEHICLES = ["bicycle", "car", "motorcycle", "bus", "truck", "boat"];
+const COLORS = { fire: "#ff5a3c", smoke: "#b8bec7", person: "#3ecf6e",
+  ...Object.fromEntries(VEHICLES.map(v => [v, "#36c5f0"])) };
 const MOD_COLORS = { rgb: "#4f8cff", thermal: "#ff9f40", audio: "#c678dd" };
 const SCENE_COLORS = { "normal": "#3ecf6e", "fire / smoke": "#ff5a3c",
-  "collapse / flood": "#ffb020", "other disaster": "#ffb020" };
+  "collapse / flood": "#ffb020", "other disaster": "#e056fd" };
+const EVENT_COLORS = { "normal": "#3ecf6e", "fire": "#ff5a3c", "smoke": "#b8bec7", "explosion": "#ff8a3c",
+  "collapsed building": "#ffb020", "flood": "#3aa0ff", "landslide": "#c08a5a", "traffic accident": "#e056fd" };
+const ZONE_COLORS = { "collapsed building": "#ffb020", "flood water": "#3aa0ff", "landslide": "#c08a5a",
+  "accident": "#e056fd" };
+const EVENT_NAMES = Object.keys(EVENT_COLORS);
+const HAZARD_SOUND = "#ffb020";
 const SEND_WIDTH = 640;       // frames are downscaled before sending
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 let meta = null, ws = null, inflight = false, seq = 0, latest = null;
-let lastScene = null, lastVictim = null, lastTag = null, lastAgree = null;
+let lastScene = null, lastVictim = null, lastTag = null, lastAgree = null, lastZones = new Set();
 const doneTimes = [];
 
 // ── status ────────────────────────────────────────────────────────────────
@@ -79,12 +87,13 @@ function showModality(mod, reason) {
   b.hidden = false;
   b.textContent = `${mod.toUpperCase()} INPUT` + (reason ? ` · ${reason}` : "");
   b.style.color = MOD_COLORS[mod];
-  $("detNote").textContent = mod === "thermal" ? "thermal-only: scene labels unreliable, detector trained on RGB" : "";
+  $("detNote").textContent = mod === "thermal" ? "thermal input: fire/smoke boxes less reliable, no hazard zones" : "";
 }
 
 function resetSession() {
   if (ws) { ws.onclose = null; ws.close(); }
-  inflight = false; latest = null; lastScene = lastVictim = lastTag = lastAgree = null; $("disagree").hidden = true;
+  inflight = false; latest = null; lastScene = lastVictim = lastTag = lastAgree = null; lastZones = new Set();
+  $("disagree").hidden = true;
   doneTimes.length = 0; $("log").innerHTML = "";
   clearOverlay();
 }
@@ -169,10 +178,47 @@ function clearOverlay() {
   ctx.clearRect(0, 0, overlay.clientWidth, overlay.clientHeight);
 }
 
+const heat = document.createElement("canvas");
+const hctx = heat.getContext("2d");
+
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+
+function drawZones(r, res) {
+  const g = res.zone_grid;
+  if (g && res.zones && res.zones.length) {
+    // soft heat layer: one pixel per patch, scaled up with smoothing
+    heat.width = g.w; heat.height = g.h;
+    const img = hctx.createImageData(g.w, g.h);
+    for (let i = 0; i < g.cls.length; i++) {
+      if (g.cls[i] < 0) continue;
+      const zone = res.zones.find(z => z.event === EVENT_NAMES[g.cls[i]]);
+      if (!zone) continue;
+      const [cr, cg, cb] = hexRgb(ZONE_COLORS[zone.cls] || "#ffffff");
+      img.data.set([cr, cg, cb, Math.round(Math.min(1, g.p[i]) * 85)], i * 4);
+    }
+    hctx.putImageData(img, 0, 0);
+    ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(heat, r.x, r.y, r.w, r.h); ctx.restore();
+  }
+  ctx.font = "600 12px system-ui, sans-serif";
+  for (const z of res.zones || []) {
+    const [x1, y1, x2, y2] = z.box;
+    const x = r.x + x1 * r.w, y = r.y + y1 * r.h, w = (x2 - x1) * r.w, h = (y2 - y1) * r.h;
+    const c = ZONE_COLORS[z.cls] || "#fff";
+    ctx.setLineDash([7, 5]); ctx.lineWidth = 2; ctx.strokeStyle = c; ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
+    const label = `${z.cls} ${z.conf.toFixed(2)}`;
+    const tw = ctx.measureText(label).width + 8;
+    const ly = y + h - 18 > y ? y + h - 18 : y;
+    ctx.fillStyle = c; ctx.fillRect(x, ly, tw, 18);
+    ctx.fillStyle = "#000"; ctx.fillText(label, x + 4, ly + 13);
+  }
+}
+
 function drawOverlay() {
   clearOverlay();
   if (latest && video.videoWidth) {
     const r = contentRect();
+    drawZones(r, latest);
     ctx.lineWidth = 2;
     ctx.font = "600 12px system-ui, sans-serif";
     for (const b of shownBoxes(latest)) {
@@ -187,14 +233,25 @@ function drawOverlay() {
       ctx.fillText(label, x + 4, Math.max(13, y - 5));
     }
     // top-right scene banner
-    const d = latest.disaster;
-    const text = `${d.label}  ${(d.conf * 100).toFixed(0)}%`;
+    const ev = latest.event || { label: latest.disaster.label, conf: latest.disaster.conf };
+    const text = `${ev.label.toUpperCase()}  ${(ev.conf * 100).toFixed(0)}%`;
     ctx.font = "700 15px system-ui, sans-serif";
     const tw = ctx.measureText(text).width + 20;
     ctx.fillStyle = "rgba(0,0,0,.65)";
     ctx.fillRect(r.x + r.w - tw - 10, r.y + 10, tw, 28);
-    ctx.fillStyle = SCENE_COLORS[d.label] || "#fff";
+    ctx.fillStyle = EVENT_COLORS[ev.label] || "#fff";
     ctx.fillText(text, r.x + r.w - tw, r.y + 29);
+    // sound banner under it
+    const a = latest.audio || {};
+    if (a.status === "ok" && a.headline && a.headline.name !== "background noise") {
+      const st = `♪ ${a.headline.name}`;
+      ctx.font = "600 13px system-ui, sans-serif";
+      const sw = ctx.measureText(st).width + 20;
+      ctx.fillStyle = "rgba(0,0,0,.65)";
+      ctx.fillRect(r.x + r.w - sw - 10, r.y + 42, sw, 24);
+      ctx.fillStyle = a.headline.hazard ? HAZARD_SOUND : "#e6edf3";
+      ctx.fillText(st, r.x + r.w - sw, r.y + 59);
+    }
   }
   requestAnimationFrame(drawOverlay);
 }
@@ -202,17 +259,21 @@ requestAnimationFrame(drawOverlay);
 
 // ── side panel ────────────────────────────────────────────────────────────
 function bars(el, items) {
-  if (el.children.length !== items.length) {
+  if (el.children.length !== items.length || !el.querySelector(".tick")) {
     el.innerHTML = items.map(() =>
-      `<div class="bar"><span class="name"></span><div class="track"><div class="fill"></div></div><span class="val"></span></div>`
+      `<div class="bar"><span class="name"></span><div class="track"><div class="fill"></div><div class="tick" hidden></div></div><span class="val"></span></div>`
     ).join("");
   }
   items.forEach((it, i) => {
     const row = el.children[i];
+    row.className = "bar" + (it.on ? " on" : "");
     row.querySelector(".name").textContent = it.name;
     row.querySelector(".name").title = it.name;
     row.querySelector(".fill").style.width = `${Math.max(0, Math.min(1, it.value)) * 100}%`;
     row.querySelector(".fill").style.background = it.color;
+    const tick = row.querySelector(".tick");
+    tick.hidden = it.tick === undefined;
+    if (it.tick !== undefined) tick.style.left = `${Math.min(1, it.tick) * 100}%`;
     row.querySelector(".val").textContent = it.value.toFixed(2);
   });
 }
@@ -220,13 +281,17 @@ function bars(el, items) {
 function pct(x) { return `${(x * 100).toFixed(0)}%`; }
 
 function updatePanel(r) {
-  const d = r.disaster;
+  const d = r.disaster, ev = r.event || { label: d.label, group: d.label, probs: {} };
   const sl = $("sceneLabel");
-  sl.textContent = d.label;
-  sl.className = "scene-label " + (d.index === 0 ? "normal" : d.index === 1 ? "fire" : "other");
+  sl.textContent = ev.label;
+  sl.className = "scene-label";
+  sl.style.color = EVENT_COLORS[ev.label] || "";
+  $("sceneSub").textContent = ev.label === "normal" ? "no hazard in view" : ev.group;
   $("sceneChip").textContent = `conf ${pct(d.conf)}`;
   bars($("sceneBars"), Object.entries(d.probs).map(([k, v]) =>
     ({ name: k, value: v, color: SCENE_COLORS[k] })));
+  bars($("eventBars"), Object.entries(ev.probs).filter(([k]) => k !== "normal")
+    .sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => ({ name: k, value: v, color: EVENT_COLORS[k] })));
   $("victim").textContent = `${r.victim.label} (${pct(r.victim.conf)})`;
   $("nuisance").textContent = r.nuisance ? `${r.nuisance.label} (${pct(r.nuisance.conf)})` : "—";
 
@@ -234,21 +299,36 @@ function updatePanel(r) {
     name: k + (r.has[k] ? "" : " (absent)"), value: r.reliability[k], color: MOD_COLORS[k] })));
 
   const a = r.audio || {};
-  $("audioChip").textContent = a.status === "ok" ? `2 s window @ ${a.window_end.toFixed(1)} s`
+  $("audioChip").textContent = a.status === "ok" ? `${a.window_s.toFixed(0)} s window @ ${a.window_end.toFixed(1)} s`
     : a.status === "silent" ? "silent" : "no audio track";
+  const snd = $("soundLabel");
   if (a.status === "ok") {
-    const p = a.pipeline;
-    $("audioPipe").textContent = `${p.disaster.label} (${pct(p.disaster.conf)})`;
-    $("audioVictim").textContent = `${p.victim.label} (${pct(p.victim.conf)})`;
-    bars($("tagBars"), a.tags.map(t => ({ name: t.name, value: t.score, color: MOD_COLORS.audio })));
+    const h = a.headline;
+    snd.textContent = h.name;
+    snd.className = "sound-label " + (h.hazard ? "hazard" : h.name === "background noise" ? "" : "context");
+    const vc = a.victim_cue;
+    $("audioVictim").textContent = vc && vc.active ? `distress voices (${vc.score.toFixed(2)})` : "none heard";
+    $("audioTop").textContent = a.top_tags && a.top_tags[0] ? `${a.top_tags[0].name} ${a.top_tags[0].score.toFixed(2)}` : "—";
+    $("audioTop").title = (a.top_tags || []).map(t => `${t.name} ${t.score.toFixed(2)}`).join("\n");
+    bars($("tagBars"), a.events.slice(0, 5).map(e => ({ name: e.name, value: e.score, tick: e.thr, on: e.active,
+      color: e.hazard ? (e.active ? HAZARD_SOUND : "#7a5a1e") : (e.active ? MOD_COLORS.audio : "#5b3f66") })));
   } else {
-    $("audioPipe").textContent = "—"; $("audioVictim").textContent = "—";
+    snd.textContent = a.status === "silent" ? "silence" : "—"; snd.className = "sound-label";
+    $("audioVictim").textContent = "—"; $("audioTop").textContent = "—";
     $("tagBars").innerHTML = `<div class="muted small">${a.status === "silent" ? "audio is silent here" : "no audio in this video"}</div>`;
   }
 
-  const n = { fire: 0, smoke: 0, person: 0 };
-  for (const b of shownBoxes(r)) n[b.cls] = (n[b.cls] || 0) + 1;
-  $("nFire").textContent = n.fire; $("nSmoke").textContent = n.smoke; $("nPerson").textContent = n.person;
+  const n = { fire: 0, smoke: 0, person: 0, vehicle: 0 };
+  for (const b of shownBoxes(r)) {
+    if (VEHICLES.includes(b.cls)) n.vehicle++; else n[b.cls] = (n[b.cls] || 0) + 1;
+  }
+  $("nFire").textContent = n.fire; $("nSmoke").textContent = n.smoke;
+  $("nPerson").textContent = n.person; $("nVehicle").textContent = n.vehicle;
+  const zc = {};
+  for (const z of r.zones || []) zc[z.cls] = (zc[z.cls] || 0) + 1;
+  $("zoneList").innerHTML = Object.keys(zc).length
+    ? Object.entries(zc).map(([k, c]) => `<span class="zone" style="color:${ZONE_COLORS[k]};border-color:${ZONE_COLORS[k]}">${esc(k)}${c > 1 ? " ×" + c : ""}</span>`).join("")
+    : `<span class="muted small">none</span>`;
 
   $("ms").textContent = `${r.timing_ms.total.toFixed(0)} ms`;
   if (doneTimes.length > 1) {
@@ -257,11 +337,17 @@ function updatePanel(r) {
   }
   $("lag").textContent = `${Math.max(0, video.currentTime - r.t).toFixed(2)} s`;
 
-  // event log: changes of scene label, victim flag, top sound tag
-  if (d.label !== lastScene) { logEvent(r.t, `Scene → <b style="color:${SCENE_COLORS[d.label]}">${d.label}</b> (${pct(d.conf)})`); lastScene = d.label; }
+  // event log: changes of scene event, victim flag, hazard zones, hazard sound
+  if (ev.label !== lastScene) {
+    logEvent(r.t, `Scene → <b style="color:${EVENT_COLORS[ev.label] || "#fff"}">${esc(ev.label)}</b> (${pct(d.conf)})`);
+    lastScene = ev.label;
+  }
   if (r.victim.index !== lastVictim) { if (lastVictim !== null || r.victim.index === 1) logEvent(r.t, `Victim → <b>${r.victim.label}</b>`); lastVictim = r.victim.index; }
-  const tag = a.status === "ok" && a.tags[0] && a.tags[0].score > 0.2 ? a.tags[0].name : null;
-  if (tag && tag !== lastTag) logEvent(r.t, `Sound → <b style="color:${MOD_COLORS.audio}">${tag}</b>`);
+  const zs = new Set(Object.keys(zc));
+  for (const k of zs) if (!lastZones.has(k)) logEvent(r.t, `Zone → <b style="color:${ZONE_COLORS[k]}">${esc(k)}</b>`);
+  lastZones = zs;
+  const tag = a.status === "ok" && a.headline.hazard ? a.headline.name : null;
+  if (tag && tag !== lastTag) logEvent(r.t, `Sound → <b style="color:${HAZARD_SOUND}">${esc(tag)}</b>`);
   lastTag = tag;
 
   const ag = r.agreement || { status: "agree", reason: "" };

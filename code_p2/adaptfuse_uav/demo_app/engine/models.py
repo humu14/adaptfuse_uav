@@ -6,13 +6,15 @@ Load every network the demo needs, once, onto one device.
 | scene / victim / nuisance, RUE | AdapFuseV1 ensemble (grouped seeds 41+42) | weights/adaptfuse_v1_grouped_s4{1,2}.pth |
 | audio-only disaster / victim   | AudioOnlyModel (AudioCNN)            | weights/baseline_audio.pth |
 | fire + smoke boxes             | YOLO26s fine-tuned on CLAHE D-Fire   | weights/dfire_yolo26s_clahe.pt |
-| person boxes                   | YOLO26n, COCO-pretrained (class 0)   | weights/yolo26n_coco.pt  |
-| AudioSet sound tags            | PANNs Cnn6, AudioSet-pretrained      | weights/panns_cnn6.pth   |
+| person + vehicle boxes         | YOLO26n, COCO-pretrained             | weights/yolo26n_coco.pt  |
+| hazard events + zones          | CLIP ViT-B/16 vision tower, zero-shot | weights/hazard_clip/, hazard_text.pt |
+| AudioSet sound events          | PANNs Cnn14_16k (or Cnn6), AudioSet-pretrained | weights/panns_cnn14_16k-*.safetensors |
 """
 
 from __future__ import annotations
 
 import csv
+import json
 import os
 import sys
 import threading
@@ -34,6 +36,9 @@ PERSON_FILE = "yolo26n_coco.pt"
 DETECTOR_IMGSZ = 640
 CLASSIFIER_FILES = ("adaptfuse_v1_grouped_s41.pth", "adaptfuse_v1_grouped_s42.pth")
 CALIBRATION_FILE = "calibration.json"
+HAZARD_CAL_FILE = "hazard_calibration.json"
+SOUND_FILE = "sound_thresholds.json"
+DEFAULT_TAGGER, DEFAULT_TAG_WINDOW = "cnn14_16k", 3.0
 
 
 def check_detector_names(names: dict, expected: dict, path, exact: bool) -> None:
@@ -65,6 +70,19 @@ class _ConvBlock5x5(nn.Module):
         return F.avg_pool2d(F.relu(self.bn1(self.conv1(x))), 2)
 
 
+class _ConvBlock3x3(nn.Module):
+    def __init__(self, in_ch: int, out_ch: int):
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_ch, out_ch, 3, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_ch)
+        self.conv2 = nn.Conv2d(out_ch, out_ch, 3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_ch)
+
+    def forward(self, x, pool=(2, 2)):
+        x = F.relu(self.bn2(self.conv2(F.relu(self.bn1(self.conv1(x))))))
+        return F.avg_pool2d(x, pool) if pool != (1, 1) else x
+
+
 class _STFT(nn.Module):
     """torchlibrosa-compatible STFT: conv1d with the checkpoint's DFT kernels."""
 
@@ -80,15 +98,15 @@ class _STFT(nn.Module):
 
 
 class _SpecExtractor(nn.Module):
-    def __init__(self):
+    def __init__(self, n_fft: int = 1024, hop: int = 320):
         super().__init__()
-        self.stft = _STFT()
+        self.stft = _STFT(n_fft, hop)
 
 
 class _LogMel(nn.Module):
-    def __init__(self):
+    def __init__(self, n_fft: int = 1024):
         super().__init__()
-        self.melW = nn.Parameter(torch.zeros(513, 64), requires_grad=False)
+        self.melW = nn.Parameter(torch.zeros(n_fft // 2 + 1, 64), requires_grad=False)
 
     def forward(self, power):                            # (B, F, T)
         mel = torch.matmul(power.transpose(1, 2), self.melW)   # (B, T, 64)
@@ -124,6 +142,33 @@ class PANNsCnn6Tagger(nn.Module):
         return torch.sigmoid(self.fc_audioset(x))
 
 
+class PANNsCnn14_16k(nn.Module):
+    """16 kHz waveform -> 527 AudioSet clip-level probabilities (Cnn14_16k, mAP 0.438)."""
+
+    SAMPLE_RATE = 16000
+
+    def __init__(self):
+        super().__init__()
+        self.spectrogram_extractor = _SpecExtractor(n_fft=512, hop=160)
+        self.logmel_extractor = _LogMel(n_fft=512)
+        self.bn0 = nn.BatchNorm2d(64)
+        chans = (1, 64, 128, 256, 512, 1024, 2048)
+        for i in range(6):
+            setattr(self, f"conv_block{i + 1}", _ConvBlock3x3(chans[i], chans[i + 1]))
+        self.fc1 = nn.Linear(2048, 2048)
+        self.fc_audioset = nn.Linear(2048, 527)
+
+    def forward(self, wav):                              # (B, L)
+        x = self.logmel_extractor(self.spectrogram_extractor.stft(wav))[:, None]   # (B, 1, T, 64)
+        x = self.bn0(x.transpose(1, 3)).transpose(1, 3)
+        for i in range(1, 7):
+            x = getattr(self, f"conv_block{i}")(x, pool=(2, 2) if i < 6 else (1, 1))
+        x = x.mean(dim=3)
+        x = x.max(dim=2).values + x.mean(dim=2)
+        x = F.relu(self.fc1(x))
+        return torch.sigmoid(self.fc_audioset(x))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Bundle
 # ─────────────────────────────────────────────────────────────────────────────
@@ -134,11 +179,68 @@ class ModelBundle:
     classifier: object          # SceneClassifier
     audio_only: nn.Module
     fire_det: object          # ultralytics.YOLO
-    person_det: object        # ultralytics.YOLO
+    person_det: object        # ultralytics.YOLO (COCO: person + vehicles)
     tagger: nn.Module
     audioset_names: list
+    hazard: object = None     # hazard.HazardModel
+    sound_thr: dict = field(default_factory=dict)
+    tag_window: float = DEFAULT_TAG_WINDOW
     # One GPU, several websocket sessions: serialize forward passes.
     lock: threading.Lock = field(default_factory=threading.Lock)
+
+
+def save_shards(state: dict, out_dir: Path, prefix: str, max_bytes: int = 85_000_000) -> list:
+    """Split a state dict into <prefix>-0000N.safetensors files below max_bytes each."""
+    from safetensors.torch import save_file
+    shards, cur, size = [], {}, 0
+    for k, v in state.items():
+        n = v.numel() * v.element_size()
+        if cur and size + n > max_bytes:
+            shards.append(cur); cur, size = {}, 0
+        cur[k], size = v.contiguous(), size + n
+    shards.append(cur)
+    for old in Path(out_dir).glob(f"{prefix}-*.safetensors"):
+        old.unlink()
+    files = []
+    for i, sh in enumerate(shards):
+        f = Path(out_dir) / f"{prefix}-{i + 1:05d}.safetensors"
+        save_file(sh, str(f))
+        files.append(f)
+    return files
+
+
+def load_shards(out_dir: Path, prefix: str) -> dict:
+    from safetensors.torch import load_file
+    files = sorted(Path(out_dir).glob(f"{prefix}-*.safetensors"))
+    if not files:
+        raise FileNotFoundError(f"no {prefix}-*.safetensors in {out_dir}; run scripts/export_audio.py")
+    sd = {}
+    for f in files:
+        sd.update(load_file(str(f)))
+    return sd
+
+
+def load_tagger(kind: str) -> nn.Module:
+    """AudioSet tagger by name: 'cnn14_16k' (mAP 0.438, 16 kHz) or 'cnn6' (mAP 0.343, 32 kHz)."""
+    if kind == "cnn14_16k":
+        m = PANNsCnn14_16k()
+        m.load_state_dict({k: v.float() for k, v in load_shards(WEIGHTS_DIR, "panns_cnn14_16k").items()})
+    elif kind == "cnn6":
+        m = PANNsCnn6Tagger()
+        m.load_state_dict(torch.load(_require(WEIGHTS_DIR / "panns_cnn6.pth"), map_location="cpu",
+                                     weights_only=False)["model"])
+    else:
+        raise ValueError(f"unknown tagger {kind!r}")
+    return m.eval()
+
+
+def load_sound_config(path: Path) -> dict:
+    default = {"tagger": DEFAULT_TAGGER, "window_s": DEFAULT_TAG_WINDOW, "thresholds": {}}
+    path = Path(path)
+    if not path.exists():
+        print(f"[models] WARNING: {path.name} not found - {DEFAULT_TAGGER}, default sound thresholds")
+        return default
+    return {**default, **json.loads(path.read_text(encoding="utf-8"))}
 
 
 def _load_state(model: nn.Module, path: Path) -> nn.Module:
@@ -196,16 +298,20 @@ def load_models(device: str | None = None) -> ModelBundle:
     audio_only = AudioOnlyModel(num_disaster_classes=4, num_victim_classes=2, backbone="audiocnn")
     _load_state(audio_only, _require(WEIGHTS_DIR / "baseline_audio.pth"))
 
-    tagger = PANNsCnn6Tagger()
-    sd = torch.load(_require(WEIGHTS_DIR / "panns_cnn6.pth"), map_location="cpu", weights_only=False)["model"]
-    tagger.load_state_dict(sd)
+    snd = load_sound_config(WEIGHTS_DIR / SOUND_FILE)
+    tagger = load_tagger(snd["tagger"])
+    print(f"[models] sound tagger: {snd['tagger']}, {snd['window_s']:.0f} s window")
+
+    from .hazard import HazardModel, load_hazard_calibration
+    hazard = HazardModel(_require(WEIGHTS_DIR / "hazard_clip"), _require(WEIGHTS_DIR / "hazard_text.pt"), dev,
+                         load_hazard_calibration(WEIGHTS_DIR / HAZARD_CAL_FILE))
 
     fire_path = _require(WEIGHTS_DIR / DETECTOR_FILE)
     fire_det = YOLO(str(fire_path))
     check_detector_names(fire_det.names, DETECTOR_NAMES, fire_path, exact=True)
     person_path = _require(WEIGHTS_DIR / PERSON_FILE)
     person_det = YOLO(str(person_path))
-    check_detector_names(person_det.names, {0: "person"}, person_path, exact=False)
+    check_detector_names(person_det.names, {0: "person", 2: "car", 8: "boat"}, person_path, exact=False)
 
     with open(_require(WEIGHTS_DIR / "audioset_labels.csv"), newline="", encoding="utf-8") as f:
         names = [row["display_name"] for row in csv.DictReader(f)]
@@ -213,4 +319,5 @@ def load_models(device: str | None = None) -> ModelBundle:
     for m in (audio_only, tagger):
         m.to(dev).eval()
 
-    return ModelBundle(dev, classifier, audio_only, fire_det, person_det, tagger, names)
+    return ModelBundle(dev, classifier, audio_only, fire_det, person_det, tagger, names,
+                       hazard=hazard, sound_thr=snd["thresholds"], tag_window=float(snd["window_s"]))

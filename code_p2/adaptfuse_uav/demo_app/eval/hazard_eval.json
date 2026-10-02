@@ -1,0 +1,713 @@
+{
+ "report": {
+  "rgb": {
+   "rows": {
+    "val": {
+     "AdapFuse ensemble (app before)": {
+      "coarse_f1": 0.914836705657635,
+      "coarse_acc": 0.9185973700688791
+     },
+     "zero-shot, no bias": {
+      "coarse_f1": 0.7890345127636357,
+      "coarse_acc": 0.788979336255479,
+      "fine_f1": 0.8043672842254033
+     },
+     "zero-shot + val bias": {
+      "coarse_f1": 0.8694796177938896,
+      "coarse_acc": 0.8653725735754539,
+      "fine_f1": 0.8870282442724614
+     },
+     "fused w=0.35 (app now)": {
+      "coarse_f1": 0.9581979864038683,
+      "coarse_acc": 0.960551033187226
+     }
+    },
+    "test": {
+     "AdapFuse ensemble (app before)": {
+      "coarse_f1": 0.900504625309955,
+      "coarse_acc": 0.8998121477770821
+     },
+     "zero-shot, no bias": {
+      "coarse_f1": 0.8355326471302915,
+      "coarse_acc": 0.8428303068252975,
+      "fine_f1": 0.84388869057502
+     },
+     "zero-shot + val bias": {
+      "coarse_f1": 0.8953566398661736,
+      "coarse_acc": 0.8998121477770821,
+      "fine_f1": 0.904484092829479
+     },
+     "fused w=0.35 (app now)": {
+      "coarse_f1": 0.9666360183300858,
+      "coarse_acc": 0.9674389480275517
+     },
+     "per_fine_f1": {
+      "normal": 0.847001223990208,
+      "fire": 0.9145211122554068,
+      "collapsed_building": 0.9036144578313253,
+      "flooded_areas": 0.9750566893424036,
+      "traffic_incident": 0.8822269807280514
+     }
+    },
+    "real": {
+     "AdapFuse ensemble (app before)": {
+      "coarse_f1": 0.11904761904761904,
+      "coarse_acc": 0.20833333333333334
+     },
+     "zero-shot, no bias": {
+      "coarse_f1": 0.48402839396628217,
+      "coarse_acc": 0.9722222222222222,
+      "fine_f1": 0.3989952904238619
+     },
+     "zero-shot + val bias": {
+      "coarse_f1": 0.48402839396628217,
+      "coarse_acc": 0.9722222222222222,
+      "fine_f1": 0.41915646258503403
+     },
+     "fused w=0.35 (app now)": {
+      "coarse_f1": 0.47469540768509844,
+      "coarse_acc": 0.9444444444444444
+     }
+    },
+    "real_per_clip": {
+     "fb54edf3b153": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion"
+      ]
+     },
+     "42928c7787e9": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "fire",
+       "fire",
+       "fire",
+       "smoke",
+       "fire",
+       "fire",
+       "fire",
+       "fire"
+      ]
+     },
+     "bd9e04a162fa": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.875,
+      "fused_acc": 1.0,
+      "events": [
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke"
+      ]
+     },
+     "d3dd366ac602": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke"
+      ]
+     },
+     "69e9a09c9ce2": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.875,
+      "fused_acc": 1.0,
+      "events": [
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire"
+      ]
+     },
+     "f04359e13141": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.125,
+      "fused_acc": 1.0,
+      "events": [
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire"
+      ]
+     },
+     "f829f6eef594": {
+      "truth": "flooded_areas",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 0.875,
+      "events": [
+       "flood",
+       "flood",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide"
+      ]
+     },
+     "02fa4278b67d": {
+      "truth": "flooded_areas",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 0.625,
+      "events": [
+       "collapsed building",
+       "collapsed building",
+       "flood",
+       "flood",
+       "collapsed building",
+       "flood",
+       "smoke",
+       "smoke"
+      ]
+     },
+     "0cab2631ba44": {
+      "truth": "collapsed_building",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "collapsed building"
+      ]
+     }
+    }
+   },
+   "curve": {
+    "0.0": {
+     "val": 0.8694796177938896,
+     "test": 0.8953566398661736,
+     "real": 0.48402839396628217
+    },
+    "0.05": {
+     "val": 0.8794862341735246,
+     "test": 0.9037487426782314,
+     "real": 0.48402839396628217
+    },
+    "0.1": {
+     "val": 0.890301408876315,
+     "test": 0.9128709255014361,
+     "real": 0.48402839396628217
+    },
+    "0.15": {
+     "val": 0.8999443537136181,
+     "test": 0.9259663756366436,
+     "real": 0.48402839396628217
+    },
+    "0.2": {
+     "val": 0.911278585074453,
+     "test": 0.9329980703746091,
+     "real": 0.48402839396628217
+    },
+    "0.25": {
+     "val": 0.9292208214527556,
+     "test": 0.9473166295195036,
+     "real": 0.48655311519497985
+    },
+    "0.3": {
+     "val": 0.9435068173833173,
+     "test": 0.9593481406483524,
+     "real": 0.4891304347826087
+    },
+    "0.35": {
+     "val": 0.9581979864038683,
+     "test": 0.9666360183300858,
+     "real": 0.47469540768509844
+    },
+    "0.4": {
+     "val": 0.9635156312110025,
+     "test": 0.9688817365587346,
+     "real": 0.43973037272006343
+    },
+    "0.45": {
+     "val": 0.9665534143629606,
+     "test": 0.9727923606082396,
+     "real": 0.4045655375552283
+    },
+    "0.5": {
+     "val": 0.9660010957170324,
+     "test": 0.9728080662718339,
+     "real": 0.37242268041237114
+    },
+    "0.55": {
+     "val": 0.9668200979091317,
+     "test": 0.9697840369277657,
+     "real": 0.37242268041237114
+    },
+    "0.6": {
+     "val": 0.9615019006348295,
+     "test": 0.9664492618722187,
+     "real": 0.32304900181488205
+    },
+    "0.65": {
+     "val": 0.9562501735039355,
+     "test": 0.9600752088998925,
+     "real": 0.24159090909090908
+    },
+    "0.7": {
+     "val": 0.9491422443029036,
+     "test": 0.9551078561780002,
+     "real": 0.20121951219512196
+    },
+    "0.75": {
+     "val": 0.9450051736562537,
+     "test": 0.9484856255375628,
+     "real": 0.17763157894736842
+    },
+    "0.8": {
+     "val": 0.9363978592062073,
+     "test": 0.9479472306237355,
+     "real": 0.1643835616438356
+    },
+    "0.85": {
+     "val": 0.9349861530672838,
+     "test": 0.9397533819433159,
+     "real": 0.15492957746478872
+    },
+    "0.9": {
+     "val": 0.9311569684649524,
+     "test": 0.9324746659559079,
+     "real": 0.15714285714285714
+    },
+    "0.95": {
+     "val": 0.9215448662737269,
+     "test": 0.9257914368437428,
+     "real": 0.15714285714285714
+    },
+    "1.0": {
+     "val": 0.914836705657635,
+     "test": 0.900504625309955,
+     "real": 0.11904761904761904
+    }
+   },
+   "bias": [
+    0.0,
+    -1.0,
+    1.75,
+    -1.5,
+    -1.75,
+    -2.0,
+    -3.0,
+    -3.0
+   ],
+   "fusion_weight": 0.35,
+   "temperature": {
+    "adaptfuse": 0.85,
+    "zero_shot": 1.2
+   }
+  },
+  "thermal": {
+   "rows": {
+    "val": {
+     "AdapFuse ensemble (app before)": {
+      "coarse_f1": 0.2921454732191303,
+      "coarse_acc": 0.43206011271133377
+     },
+     "zero-shot, no bias": {
+      "coarse_f1": 0.7248653668932798,
+      "coarse_acc": 0.7182216656230432,
+      "fine_f1": 0.7340536343033788
+     },
+     "zero-shot + val bias": {
+      "coarse_f1": 0.8249344289958188,
+      "coarse_acc": 0.8159048215403882,
+      "fine_f1": 0.8471330430998749
+     },
+     "fused w=0.40 (app now)": {
+      "coarse_f1": 0.8553168743080953,
+      "coarse_acc": 0.8509705698184096
+     }
+    },
+    "test": {
+     "AdapFuse ensemble (app before)": {
+      "coarse_f1": 0.2983002678908233,
+      "coarse_acc": 0.43894802755165935
+     },
+     "zero-shot, no bias": {
+      "coarse_f1": 0.7302875216028084,
+      "coarse_acc": 0.7269881026925485,
+      "fine_f1": 0.7456383144149121
+     },
+     "zero-shot + val bias": {
+      "coarse_f1": 0.8245370282856441,
+      "coarse_acc": 0.8165309956167814,
+      "fine_f1": 0.8439129316919963
+     },
+     "fused w=0.40 (app now)": {
+      "coarse_f1": 0.8517100611741821,
+      "coarse_acc": 0.8434564809016907
+     },
+     "per_fine_f1": {
+      "normal": 0.7482014388489209,
+      "fire": 0.7641509433962265,
+      "collapsed_building": 0.8695652173913043,
+      "flooded_areas": 0.9552941176470588,
+      "traffic_incident": 0.8823529411764706
+     }
+    },
+    "real": {
+     "AdapFuse ensemble (app before)": {
+      "coarse_f1": 0.11538461538461539,
+      "coarse_acc": 0.20833333333333334
+     },
+     "zero-shot, no bias": {
+      "coarse_f1": 0.46875,
+      "coarse_acc": 0.9444444444444444,
+      "fine_f1": 0.32014267879436414
+     },
+     "zero-shot + val bias": {
+      "coarse_f1": 0.4208791208791209,
+      "coarse_acc": 0.875,
+      "fine_f1": 0.33799482056973734
+     },
+     "fused w=0.40 (app now)": {
+      "coarse_f1": 0.4218342886920271,
+      "coarse_acc": 0.8611111111111112
+     }
+    },
+    "real_per_clip": {
+     "fb54edf3b153": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion"
+      ]
+     },
+     "42928c7787e9": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire"
+      ]
+     },
+     "bd9e04a162fa": {
+      "truth": "fire",
+      "adaptfuse_acc": 1.0,
+      "fused_acc": 1.0,
+      "events": [
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke"
+      ]
+     },
+     "d3dd366ac602": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke",
+       "smoke"
+      ]
+     },
+     "69e9a09c9ce2": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.875,
+      "fused_acc": 1.0,
+      "events": [
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "fire",
+       "explosion",
+       "fire"
+      ]
+     },
+     "f04359e13141": {
+      "truth": "fire",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 1.0,
+      "events": [
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire",
+       "fire"
+      ]
+     },
+     "f829f6eef594": {
+      "truth": "flooded_areas",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 0.875,
+      "events": [
+       "smoke",
+       "flood",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide"
+      ]
+     },
+     "02fa4278b67d": {
+      "truth": "flooded_areas",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 0.0,
+      "events": [
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "explosion",
+       "smoke",
+       "smoke"
+      ]
+     },
+     "0cab2631ba44": {
+      "truth": "collapsed_building",
+      "adaptfuse_acc": 0.0,
+      "fused_acc": 0.875,
+      "events": [
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "landslide",
+       "smoke",
+       "landslide",
+       "collapsed building"
+      ]
+     }
+    }
+   },
+   "curve": {
+    "0.0": {
+     "val": 0.8249344289958188,
+     "test": 0.8245370282856441,
+     "real": 0.4208791208791209
+    },
+    "0.05": {
+     "val": 0.8280720004760461,
+     "test": 0.8273165899696672,
+     "real": 0.4208791208791209
+    },
+    "0.1": {
+     "val": 0.8336256793964459,
+     "test": 0.8321257800115468,
+     "real": 0.4208791208791209
+    },
+    "0.15": {
+     "val": 0.8341233800280878,
+     "test": 0.835369844984298,
+     "real": 0.4208791208791209
+    },
+    "0.2": {
+     "val": 0.8369088067424171,
+     "test": 0.8413896085683518,
+     "real": 0.4208791208791209
+    },
+    "0.25": {
+     "val": 0.8397912169212834,
+     "test": 0.843380714245503,
+     "real": 0.4208791208791209
+    },
+    "0.3": {
+     "val": 0.8423857628581037,
+     "test": 0.8501307535874683,
+     "real": 0.4253174010455564
+    },
+    "0.35": {
+     "val": 0.8468219715320773,
+     "test": 0.8519207631417205,
+     "real": 0.4253174010455564
+    },
+    "0.4": {
+     "val": 0.8553168743080953,
+     "test": 0.8517100611741821,
+     "real": 0.4218342886920271
+    },
+    "0.45": {
+     "val": 0.8633546556850339,
+     "test": 0.8520205251944032,
+     "real": 0.4218342886920271
+    },
+    "0.5": {
+     "val": 0.8607368416582242,
+     "test": 0.8531007199162841,
+     "real": 0.4242105263157895
+    },
+    "0.55": {
+     "val": 0.8545096724500578,
+     "test": 0.8536566522669797,
+     "real": 0.39714285714285713
+    },
+    "0.6": {
+     "val": 0.8448281533625617,
+     "test": 0.8449337193095411,
+     "real": 0.3529032258064516
+    },
+    "0.65": {
+     "val": 0.8388567416448574,
+     "test": 0.8374856929703732,
+     "real": 0.31201334816462734
+    },
+    "0.7": {
+     "val": 0.8207811753345886,
+     "test": 0.8252204342398063,
+     "real": 0.19642857142857142
+    },
+    "0.75": {
+     "val": 0.7842163062868491,
+     "test": 0.7993986703769749,
+     "real": 0.11363636363636363
+    },
+    "0.8": {
+     "val": 0.7051568720805573,
+     "test": 0.7477153193603082,
+     "real": 0.11363636363636363
+    },
+    "0.85": {
+     "val": 0.6025280789629172,
+     "test": 0.6064062718387077,
+     "real": 0.11363636363636363
+    },
+    "0.9": {
+     "val": 0.42823675175211107,
+     "test": 0.40152858591725427,
+     "real": 0.11363636363636363
+    },
+    "0.95": {
+     "val": 0.3121063748079877,
+     "test": 0.31052657267298855,
+     "real": 0.11363636363636363
+    },
+    "1.0": {
+     "val": 0.2921454732191303,
+     "test": 0.2983002678908233,
+     "real": 0.11538461538461539
+    }
+   },
+   "bias": [
+    0.0,
+    0.75,
+    1.5,
+    0.0,
+    -3.0,
+    -2.25,
+    -3.0,
+    -2.75
+   ],
+   "fusion_weight": 0.4,
+   "temperature": {
+    "adaptfuse": 1.5,
+    "zero_shot": 1.5
+   }
+  }
+ },
+ "calibration": {
+  "bias": {
+   "rgb": [
+    0.0,
+    -1.0,
+    1.75,
+    -1.5,
+    -1.75,
+    -2.0,
+    -3.0,
+    -3.0
+   ],
+   "thermal": [
+    0.0,
+    0.75,
+    1.5,
+    0.0,
+    -3.0,
+    -2.25,
+    -3.0,
+    -2.75
+   ]
+  },
+  "fusion_weight": {
+   "rgb": 0.35,
+   "thermal": 0.4
+  },
+  "temperature": {
+   "rgb": {
+    "adaptfuse": 0.85,
+    "zero_shot": 1.2
+   },
+   "thermal": {
+    "adaptfuse": 1.5,
+    "zero_shot": 1.5
+   }
+  },
+  "zone": {
+   "gate": 0.25,
+   "thr": 0.5,
+   "min_frac": 0.02
+  },
+  "tuned_on": "data/metadata_grouped/seed_42/val.csv (stratified subset)"
+ },
+ "n": {
+  "val": 1597,
+  "test": 1597,
+  "real": 72
+ }
+}

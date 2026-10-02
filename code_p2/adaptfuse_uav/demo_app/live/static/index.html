@@ -45,7 +45,7 @@
         <label class="field">Fire/smoke ≥ <span id="detConfV">0.25</span>
           <input type="range" id="detConf" min="0.05" max="0.9" step="0.05" value="0.25" />
         </label>
-        <label class="field">Person ≥ <span id="perConfV">0.35</span>
+        <label class="field">People / vehicles ≥ <span id="perConfV">0.35</span>
           <input type="range" id="perConf" min="0.05" max="0.9" step="0.05" value="0.35" />
         </label>
       </div>
@@ -60,7 +60,10 @@
       <div class="card">
         <div class="card-head"><h2>Scene</h2><span class="chip" id="sceneChip">—</span></div>
         <div class="scene-label" id="sceneLabel">—</div>
+        <div class="scene-sub muted" id="sceneSub">&nbsp;</div>
         <div id="sceneBars" class="bars"></div>
+        <div class="k mt">Hazard type</div>
+        <div id="eventBars" class="bars mt-s"></div>
         <div class="row2">
           <div><div class="k">Victim</div><div class="v" id="victim">—</div></div>
           <div><div class="k">Nuisance</div><div class="v" id="nuisance">—</div></div>
@@ -74,12 +77,14 @@
 
       <div class="card">
         <div class="card-head"><h2>Audio</h2><span class="chip" id="audioChip">—</span></div>
+        <div class="k">Sound event</div>
+        <div class="sound-label" id="soundLabel">—</div>
         <div class="row2">
-          <div><div class="k">Pipeline (audio-only)</div><div class="v" id="audioPipe">—</div></div>
           <div><div class="k">Victim cue</div><div class="v" id="audioVictim">—</div></div>
+          <div><div class="k">Loudest class</div><div class="v small-v" id="audioTop">—</div></div>
         </div>
-        <div class="k mt">Sound tags <span class="muted">(PANNs, AudioSet-pretrained)</span></div>
-        <div id="tagBars" class="bars"></div>
+        <div class="k mt">Sound events</div>
+        <div id="tagBars" class="bars mt-s"></div>
       </div>
 
       <div class="card">
@@ -88,7 +93,10 @@
           <div class="count fire"><span id="nFire">0</span>fire</div>
           <div class="count smoke"><span id="nSmoke">0</span>smoke</div>
           <div class="count person"><span id="nPerson">0</span>person</div>
+          <div class="count vehicle"><span id="nVehicle">0</span>vehicle</div>
         </div>
+        <div class="k mt">Hazard zones</div>
+        <div id="zoneList" class="zones"><span class="muted small">none</span></div>
       </div>
 
       <div class="card perf">
@@ -97,15 +105,6 @@
         <div><div class="k">Lag</div><div class="v" id="lag">—</div></div>
         <div><div class="k">Device</div><div class="v" id="device">—</div></div>
       </div>
-
-      <p class="provenance">
-        Scene, victim and nuisance labels and RUE come from an ensemble of two <b>AdapFuse-V1</b> models
-        (grouped split, seeds 41 + 42, flip TTA, class calibration); the audio-only label from the pipeline
-        AudioCNN; fire/smoke boxes from <b>YOLO26s fine-tuned on CLAHE D-Fire</b>. These are all
-        trained in the AdapFuse-UAV pipeline. <b>Person boxes</b> use COCO-pretrained YOLO26n and
-        <b>sound tags</b> use AudioSet-pretrained PANNs Cnn6; neither was fine-tuned here. Labels are
-        smoothed over ~1 s and boxes are shown once they persist for 2 of 3 analyzed frames.
-      </p>
     </aside>
   </main>
 

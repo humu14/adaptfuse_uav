@@ -12,6 +12,7 @@ from collections import deque
 import numpy as np
 
 FIRE_SCENE = 1                      # index of "fire / smoke" in DISASTER_CLASSES
+DUST_SCENES = (2,)                  # "collapse / flood": dust and spray look like smoke to the detector
 HAZARD_BOXES = ("fire", "smoke")
 
 
@@ -84,7 +85,8 @@ class TemporalState:
             self.fire_scene_since = None
 
         status, reason = "agree", ""
-        strong = [b for b in hazard if b["conf"] >= self.disagree_conf]
+        strong = [b for b in hazard if b["conf"] >= self.disagree_conf
+                  and not (b["cls"] == "smoke" and scene in DUST_SCENES)]
         if strong and scene != FIRE_SCENE:
             top = max(strong, key=lambda b: b["conf"])
             reason = f'detector: {top["cls"]} {top["conf"]:.2f}'

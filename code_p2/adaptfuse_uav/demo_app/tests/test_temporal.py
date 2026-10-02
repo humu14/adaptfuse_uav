@@ -85,6 +85,16 @@ def test_detector_only_flag():
     assert ag["since"] == 0.1
 
 
+def test_smoke_in_collapse_scene_is_not_a_disagreement():
+    collapse = {**NORMAL, "disaster": np.array([0.05, 0.05, 0.85, 0.05])}
+    s = TemporalState()
+    s.update(0.0, collapse, [box("smoke", 0.8)])
+    assert s.update(0.1, collapse, [box("smoke", 0.8)])[2]["status"] == "agree"      # dust cloud
+    s2 = TemporalState()
+    s2.update(0.0, collapse, [box("fire", 0.8)])
+    assert s2.update(0.1, collapse, [box("fire", 0.8)])[2]["status"] == "detector_only"
+
+
 def test_weak_box_does_not_flag():
     s = TemporalState()
     s.update(0.0, NORMAL, [box(conf=0.3)])

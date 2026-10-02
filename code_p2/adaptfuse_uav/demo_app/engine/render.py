@@ -5,8 +5,13 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
+from .labels import COCO_KEEP
+
 # BGR
-COLORS = {"fire": (40, 60, 235), "smoke": (170, 170, 170), "person": (60, 200, 60)}
+COLORS = {"fire": (40, 60, 235), "smoke": (170, 170, 170), "person": (60, 200, 60),
+          **{v: (240, 197, 54) for v in COCO_KEEP.values() if v != "person"}}
+ZONE_COLORS = {"collapsed building": (32, 176, 255), "flood water": (255, 160, 58), "landslide": (90, 138, 192),
+               "accident": (253, 86, 224)}
 PANEL_BG = (24, 24, 24)
 TEXT = (240, 240, 240)
 MUTED = (160, 160, 160)
@@ -16,6 +21,42 @@ MOD_COLORS = {"rgb": (230, 160, 60), "thermal": (60, 120, 240), "audio": (180, 9
 
 def _text(img, s, org, scale=0.5, color=TEXT, thick=1):
     cv2.putText(img, s, org, cv2.FONT_HERSHEY_SIMPLEX, scale, color, thick, cv2.LINE_AA)
+
+
+def _dashed_rect(img, p1, p2, color, dash=10):
+    (x1, y1), (x2, y2) = p1, p2
+    for a, b in (((x1, y1), (x2, y1)), ((x2, y1), (x2, y2)), ((x2, y2), (x1, y2)), ((x1, y2), (x1, y1))):
+        n = max(1, int(np.hypot(b[0] - a[0], b[1] - a[1]) / dash))
+        for i in range(0, n, 2):
+            s = (int(a[0] + (b[0] - a[0]) * i / n), int(a[1] + (b[1] - a[1]) * i / n))
+            e = (int(a[0] + (b[0] - a[0]) * (i + 1) / n), int(a[1] + (b[1] - a[1]) * (i + 1) / n))
+            cv2.line(img, s, e, color, 2, cv2.LINE_AA)
+
+
+def draw_zones(frame: np.ndarray, zones: list, grid: dict | None) -> None:
+    h, w = frame.shape[:2]
+    if grid and zones:
+        from .labels import HAZARD_NAMES
+        cls = np.array(grid["cls"]).reshape(grid["h"], grid["w"])
+        p = np.array(grid["p"], dtype=np.float32).reshape(grid["h"], grid["w"])
+        overlay = np.zeros((grid["h"], grid["w"], 3), np.float32)
+        alpha = np.zeros((grid["h"], grid["w"]), np.float32)
+        for z in zones:
+            m = cls == HAZARD_NAMES.index(z["event"])
+            overlay[m] = ZONE_COLORS.get(z["cls"], (255, 255, 255))
+            alpha[m] = np.minimum(1.0, p[m]) * 0.3
+        overlay = cv2.resize(overlay, (w, h), interpolation=cv2.INTER_LINEAR)
+        alpha = cv2.resize(alpha, (w, h), interpolation=cv2.INTER_LINEAR)[..., None]
+        frame[:] = (frame * (1 - alpha) + overlay * alpha).astype(np.uint8)
+    for z in zones:
+        x1, y1, x2, y2 = (int(z["box"][0] * w), int(z["box"][1] * h), int(z["box"][2] * w), int(z["box"][3] * h))
+        c = ZONE_COLORS.get(z["cls"], (255, 255, 255))
+        _dashed_rect(frame, (x1, y1), (x2 - 1, y2 - 1), c)
+        label = f'{z["cls"]} {z["conf"]:.2f}'
+        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+        ly = max(th + 6, y2 - 2)
+        cv2.rectangle(frame, (x1, ly - th - 6), (x1 + tw + 6, ly), c, -1)
+        _text(frame, label, (x1 + 3, ly - 4), 0.5, (0, 0, 0))
 
 
 def draw_boxes(frame: np.ndarray, boxes: list) -> None:
@@ -31,16 +72,20 @@ def draw_boxes(frame: np.ndarray, boxes: list) -> None:
         _text(frame, label, (x1 + 3, max(th, y1 - 4)), 0.5, (0, 0, 0) if b["cls"] == "smoke" else TEXT)
 
 
-def _bar(img, x, y, w, frac, color, label, value):
+def _bar(img, x, y, w, frac, color, label, value, tick=None):
     cv2.rectangle(img, (x, y), (x + w, y + 10), (60, 60, 60), -1)
     cv2.rectangle(img, (x, y), (x + int(w * max(0.0, min(1.0, frac))), y + 10), color, -1)
+    if tick is not None:
+        tx = x + int(w * min(1.0, tick))
+        cv2.line(img, (tx, y - 2), (tx, y + 12), TEXT, 1)
     _text(img, label, (x, y - 4), 0.42, MUTED)
     _text(img, value, (x + w + 6, y + 10), 0.42, TEXT)
 
 
 def render_frame(frame: np.ndarray, res: dict, panel_w: int = 300) -> np.ndarray:
-    """Return frame with boxes drawn and a side panel of labels (width + panel_w)."""
+    """Return frame with zones and boxes drawn and a side panel of labels (width + panel_w)."""
     frame = frame.copy()
+    draw_zones(frame, res.get("zones", []), res.get("zone_grid"))
     draw_boxes(frame, res["boxes"])
     h = frame.shape[0]
     panel = np.full((h, panel_w, 3), PANEL_BG, dtype=np.uint8)
@@ -49,17 +94,22 @@ def render_frame(frame: np.ndarray, res: dict, panel_w: int = 300) -> np.ndarray
     _text(panel, f'input: {res["modality"].upper()}', (x, y), 0.45, MUTED); y += 26
 
     d, v, n = res["disaster"], res["victim"], res["nuisance"]
-    _text(panel, "SCENE", (x, y), 0.42, MUTED); y += 20
-    _text(panel, f'{d["label"]}  {d["conf"]:.2f}', (x, y), 0.6, TEXT, 2); y += 22
+    ev = res.get("event") or {"label": d["label"], "group": d["label"]}
+    _text(panel, "SCENE", (x, y), 0.42, MUTED); y += 22
+    _text(panel, f'{ev["label"].upper()}  {d["conf"]:.2f}', (x, y), 0.6, TEXT, 2); y += 18
+    _text(panel, ev["group"] if ev["label"] != "normal" else "no hazard in view", (x, y), 0.42, MUTED); y += 20
     _text(panel, f'{v["label"]}  {v["conf"]:.2f}', (x, y), 0.5); y += 20
     if n:
-        _text(panel, f'nuisance: {n["label"]} {n["conf"]:.2f}', (x, y), 0.45); y += 26
+        _text(panel, f'nuisance: {n["label"]} {n["conf"]:.2f}', (x, y), 0.45); y += 22
+    zones = res.get("zones", [])
+    if zones:
+        _text(panel, "zones: " + ", ".join(dict.fromkeys(z["cls"] for z in zones)), (x, y), 0.45, WARN); y += 20
     ag = res.get("agreement", {"status": "agree"})
     if ag["status"] != "agree":
         _text(panel, "MODELS DISAGREE", (x, y), 0.5, WARN, 2); y += 18
         for part in ag["reason"].split(" · ")[:2]:
             _text(panel, part[:36], (x, y), 0.42, WARN); y += 16
-        y += 6
+    y += 6
 
     _text(panel, "RUE RELIABILITY", (x, y), 0.42, MUTED); y += 18
     for k in ("rgb", "thermal", "audio"):
@@ -71,11 +121,11 @@ def render_frame(frame: np.ndarray, res: dict, panel_w: int = 300) -> np.ndarray
     a = res["audio"]
     _text(panel, "AUDIO", (x, y), 0.42, MUTED); y += 20
     if a.get("status") == "ok":
-        ad = a["pipeline"]["disaster"]
-        _text(panel, f'pipeline: {ad["label"]} {ad["conf"]:.2f}', (x, y), 0.45); y += 18
-        for tag in a["tags"][:3]:
-            _bar(panel, x, y + 12, panel_w - 80, tag["score"], MOD_COLORS["audio"],
-                 tag["name"][:30], f'{tag["score"]:.2f}')
+        hl = a["headline"]
+        _text(panel, hl["name"], (x, y), 0.55, WARN if hl["hazard"] else TEXT, 2 if hl["hazard"] else 1); y += 8
+        for e in a["events"][:3]:
+            _bar(panel, x, y + 14, panel_w - 80, e["score"], WARN if e["hazard"] else MOD_COLORS["audio"],
+                 e["name"][:30], f'{e["score"]:.2f}', tick=e["thr"])
             y += 30
     else:
         _text(panel, a.get("status", "none"), (x, y), 0.45); y += 20
@@ -83,7 +133,8 @@ def render_frame(frame: np.ndarray, res: dict, panel_w: int = 300) -> np.ndarray
     y = h - 34
     counts = {}
     for b in res["boxes"]:
-        counts[b["cls"]] = counts.get(b["cls"], 0) + 1
+        k = "vehicle" if b["cls"] not in ("fire", "smoke", "person") else b["cls"]
+        counts[k] = counts.get(k, 0) + 1
     _text(panel, "boxes: " + (", ".join(f"{k} x{c}" for k, c in counts.items()) or "none"),
           (x, y), 0.45)
     _text(panel, f'{res["timing_ms"]["total"]:.0f} ms/frame', (x, y + 20), 0.42, MUTED)

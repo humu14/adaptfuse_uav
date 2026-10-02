@@ -7,7 +7,7 @@ draws the returned boxes and labels on top of the video. The server keeps the
 video's audio track and cuts the 2 s window ending at that timestamp, so the
 audio labels stay in sync with what the viewer hears.
 
-    python demo_app/live/server.py            # http://127.0.0.1:8000
+    python demo_app/live/server.py            # http://127.0.0.1:8001
 """
 
 from __future__ import annotations
@@ -184,7 +184,7 @@ if __name__ == "__main__":
     import uvicorn
     ap = argparse.ArgumentParser()
     ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--port", type=int, default=8000)
+    ap.add_argument("--port", type=int, default=8001)
     ap.add_argument("--device", default=None, help="cuda | cpu (default: cuda if available)")
     args = ap.parse_args()
     if args.device:
