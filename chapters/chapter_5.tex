@@ -116,7 +116,7 @@ Figure~\ref{fig:dataset_composition} shows the source and label distributions fo
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_08_dataset.png}
-\caption{Dataset composition: 72{,}997 samples from six public sources (left), and test-set label distributions for disaster class (centre) and victim detection (right). FLAME dominates at 65.7\% of all samples; the dataset is majority fire/smoke (46.5\% of test samples; other hazard 4.0\%) with 22.5\% victim-visible samples.}
+\caption{Dataset composition: 72{,}997 samples from six public sources (left), and test-set label distributions for disaster class (centre) and victim-presence classification (right). FLAME dominates at 65.7\% of all samples; the dataset is majority fire/smoke (46.5\% of test samples; other hazard 4.0\%) with 22.5\% victim-visible samples.}
 \label{fig:dataset_composition}
 \end{figure}
 
@@ -156,8 +156,8 @@ Six fusion designs are implemented and compared to evaluate the contribution of 
 \toprule
 \textbf{Design} & \textbf{Name} & \textbf{Approach} & \textbf{Limitation} \\
 \midrule
-A1 & RGB-only          & MobileNetV3-Small; 576-dim $\to$ FC classifier & No thermal or audio cue; fails in smoke/night \\
-A2 & Thermal-only      & ResNet-18 (1-channel); 512-dim $\to$ FC classifier & No colour cue; lower spatial resolution \\
+A1 & RGB-only          & MobileNetV3-Small; 576-dim $\to$ FC classifier & No thermal or audio cue; vulnerable under heavy smoke and low-light conditions \\
+A2 & Pseudo-thermal-only& ResNet-18 (1-channel); 512-dim $\to$ FC classifier & No colour cue; lower spatial resolution \\
 A3 & Audio-only        & 2D-CNN on log-mel (32$\to$64$\to$128 filters) & Label-matched ESC-50 clips; rotor noise not tested \\
 B  & Early Fusion      & 5-channel input (RGB 3ch + Thermal 1ch + Audio resized 1ch) processed by one shared ResNet-18 & One backbone handles all sensor types; loses modality-specific features \\
 C  & Late Fusion       & Three independent models produce class probabilities; learned weighted average & Sensors never share intermediate features \\
@@ -186,7 +186,7 @@ Figure~\ref{fig:data_provenance} summarises what our metadata actually supply fo
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/4.6.png}
-\caption{Data provenance and supervision boundary recomputed from our metadata. The unified collection contains 70{,}997 measured RGB images, 70{,}997 RGB-derived pseudo-thermal maps, and 39{,}003 audio assignments referencing 2{,}000 unique ESC-50 clips. Bounding-box paths occur in 15{,}970 C2A/SARD rows. Nuisance labels, corruption flags, sensor-IR frames, and synchronized tri-modal sequences are absent.}
+\caption{Data provenance and supervision boundary recomputed from our metadata. The unified collection contains 70{,}997 measured RGB images, 70{,}997 RGB-derived pseudo-thermal maps, and 39{,}003 audio assignments referencing 2{,}000 unique ESC-50 clips, whose clip class encodes the fire/clean label. Person bounding-box paths occur in 15{,}970 C2A/SARD rows; smoke/fire boxes come only from the separate D-Fire benchmark. Nuisance labels, corruption flags, sensor-IR frames, and synchronized tri-modal sequences are absent.}
 \label{fig:data_provenance}
 \end{figure}
 
@@ -287,7 +287,7 @@ ViT-B/16 & ViT & 85.80 & 17.56$^\ddagger$ & 81.1 & 2{,}628 & Over (MACs) \\
 }
 \end{table}
 
-\textbf{Visual encoders.} MobileNetV3-Small is the cheapest candidate (0.06\,GMACs) and is the default RGB encoder of every fused model. EfficientNet-B0 has the highest ImageNet accuracy inside the budget (77.7\%), and MobileViT-XXS is the only CNN--Transformer hybrid inside it. The other in-budget candidates were not trained: each costs more MACs than MobileNetV3-Small and has a lower top-1 than EfficientNet-B0, so it lies inside the cost--accuracy range the three selected networks already cover. Every candidate above 1\,GMAC was rejected; the larger models (ResNet-50, ConvNeXt-Tiny, Swin-T, ViT-B/16) need 4--18$\times$ the budget per stream while gaining at most 4.8 top-1 points over EfficientNet-B0.
+\textbf{Visual encoders.} MobileNetV3-Small has the lowest computational cost among the evaluated candidates (0.06\,GMACs) and is the default RGB encoder of every fused model. EfficientNet-B0 has the highest ImageNet accuracy inside the budget (77.7\%), and MobileViT-XXS is the only CNN--Transformer hybrid inside it. The other in-budget candidates were not trained: each costs more MACs than MobileNetV3-Small and has a lower top-1 than EfficientNet-B0, so it lies inside the cost--accuracy range the three selected networks already cover. Every candidate above 1\,GMAC was rejected; the larger models (ResNet-50, ConvNeXt-Tiny, Swin-T, ViT-B/16) need 4--18$\times$ the budget per stream while gaining at most 4.8 top-1 points over EfficientNet-B0.
 
 \textbf{Pseudo-thermal encoder.} ResNet-18 is the exception: at 1.81\,GMACs and 11.2\,M parameters it is over budget. It was kept as the A2 baseline because single-channel adaptation of a pretrained ResNet by summing first-layer weights is a common transfer baseline for grey-scale and thermal imagery. The two in-budget replacements are tested directly: both EfficientNet-B0 and MobileViT-XXS outperform it on the pseudo-thermal stream with 2.8--11.8$\times$ fewer parameters (Table~\ref{tab:unimodal_thermal}).
 

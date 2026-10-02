@@ -83,7 +83,7 @@ For every RGB source in our metadata, pseudo-thermal maps were generated from th
 
 Six core fusion designs along with architectural variants were implemented and compared on the same data split, balanced training subset and loss (learning-rate schedules differed between some runs; Table~\ref{tab:training}):
 
-\textbf{Unimodal baselines:} Design A1 (RGB-only MobileNetV3-Small), A2 (Thermal-only ResNet-18), and A3 (Audio-only 2D-CNN on mel-spectrograms) established per-modality performance bounds.
+\textbf{Unimodal baselines:} Design A1 (RGB-only MobileNetV3-Small), A2 (Pseudo-thermal-only ResNet-18), and A3 (Audio-only 2D-CNN on mel-spectrograms) established per-modality performance bounds.
 
 \textbf{Early Fusion (Design B):} A five-channel ResNet-18 receiving concatenated RGB, pseudo-thermal, and mel-spectrogram projections in the spatial domain.
 

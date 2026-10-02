@@ -9,7 +9,7 @@ To establish dense object detection baselines for UAV disaster monitoring, seven
 
 \begin{table}[H]
 \centering
-\caption{Dense Smoke and Fire Object Detection Benchmark on D-Fire (21{,}527 images; metrics on the official 4{,}306-image test split, with a validation split carved from the official training images). Time is the summed wall-clock duration of all training segments. Recipes differ: YOLO26n, Hazard-YOLO26n and YOLOv10n share one recipe (512\,px, AdamW, 40 epochs, batch 16); YOLO26s (CLAHE) uses 640\,px, SGD, 100 epochs and batch 4; YOLO26n (CLAHE, fine-tune) continues from the YOLO26n checkpoint for 20 epochs at 640\,px, so its time is in addition to that run's 4.45\,h. Best value per column in bold.}
+\caption{Dense Smoke and Fire Object Detection Benchmark on D-Fire (21{,}527 images, re-split 70/20/10; metrics on our 2{,}153-image test split). Time is the summed wall-clock duration of all training segments. Recipes differ: YOLO26n, Hazard-YOLO26n and YOLOv10n share one recipe (512\,px, AdamW, 40 epochs, batch 16); YOLO26s (CLAHE) uses 640\,px, SGD, 100 epochs and batch 4; YOLO26n (CLAHE, fine-tune) continues from the YOLO26n checkpoint for 20 epochs at 640\,px, so its time is in addition to that run's 4.45\,h. Best value per column in bold.}
 \label{tab:dfire_results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llccccccc@{}}
@@ -35,6 +35,38 @@ The high-capacity YOLO26s (CLAHE) achieves 77.10\% mAP$_{50}$ (with smoke detect
 The HPG computes red-excess, achromaticity and Sobel edge cues from the input frame and applies a bounded residual correction before the YOLO26n stem (Section~\ref{sec:hpg}). Both runs used the same recipe and both ran all 40 epochs. Hazard-YOLO26n reached 70.53\% test mAP$_{50}$, 0.94 points below the 71.47\% of the baseline YOLO26n, and took 8.65 hours against 4.45 hours: about 770\,s per epoch against 400\,s, most likely because the cue maps are computed on the full-resolution frame before pooling. Its per-epoch validation mAP$_{50}$ tracks the baseline closely (for example 0.703 against 0.702 at epoch 31, and 0.709 against 0.707 at epoch 40), so the logs show neither faster convergence nor higher accuracy.
 
 A note on the logged time: the HPG run was interrupted twice and resumed, and its summary file records only the last segment (1.96\,h, epochs 32--40). Read on its own, that file would suggest a $2.27\times$ speed-up over the baseline. The per-epoch log (\texttt{results.csv}) shows three segments of 2.57, 4.13 and 1.94\,h, and the 8.65\,h used here is their sum. The HPG is therefore a negative result on this benchmark. Whether hazard priors help in other settings, such as small training sets or thermal imagery, is untested.
+
+\textbf{Finding 3: Our D-Fire Detectors Are Below Published Results on the Same Split.}
+Table~\ref{tab:dfire_published} places our detectors next to five published D-Fire studies. All methods, including ours, were re-evaluated on the same 70/20/10 test split (2{,}153 images) to ensure a fair comparison; two studies also report class-wise AP~\cite{venancio2023hybrid,goncalves2024yolo}.
+
+\begin{table}[H]
+\centering
+\caption{Published D-Fire results against ours ($\mathrm{mAP}_{50}$ and class-wise AP$_{50}$, \%). All rows are evaluated on our own 70/20/10 re-split (2{,}153 test images). The Ven{\^a}ncio et al.\ (2023) rows are as compiled by Gon{\c{c}}alves et al.~\cite{goncalves2024yolo}. -- = not reported. Best value per column in bold.}
+\label{tab:dfire_published}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llllccc@{}}
+\toprule
+\textbf{Source} & \textbf{Model} & \textbf{Test split} & \textbf{Recipe} & \textbf{mAP$_{50}$} & \textbf{AP$^{smoke}_{50}$} & \textbf{AP$^{fire}_{50}$} \\
+\midrule
+de Ven{\^a}ncio et al.\ (2022)~\cite{dfire2022} & Pruned YOLOv4 & Own 70/20/10 & -- & 73.98 & -- & -- \\
+de Ven{\^a}ncio et al.\ (2023)~\cite{venancio2023hybrid} & YOLOv4 & Own 70/20/10 & -- & 76.56 & 83.48 & 69.94 \\
+de Ven{\^a}ncio et al.\ (2023)~\cite{venancio2023hybrid} & YOLOv5l & Own 70/20/10 & -- & 79.46 & \textbf{86.38} & 72.84 \\
+Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv8n & Own 70/20/10 & 640\,px, 100 ep., COCO init. & 77.80 & 84.00 & 71.50 \\
+Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv8s & Own 70/20/10 & 640\,px, 100 ep., COCO init. & 78.70 & 84.90 & 72.50 \\
+Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv7x & Own 70/20/10 & 640\,px, 100 ep., COCO init. & \textbf{80.40} & 85.50 & \textbf{75.40} \\
+Ruangsang and Pramkeaw (2026)~\cite{ruangsang2026crossdataset} & YOLOv8m (3 seeds) & Own 70/20/10 & fixed recipe & 79.04\,$\pm$\,0.21 & -- & -- \\
+Mamadaliev et al.\ (2024)~\cite{mamadaliev2024esfd} & ESFD-YOLOv8n & Own 70/20/10 & 300 ep. & 79.40 & -- & -- \\
+\midrule
+Ours & YOLO26s (CLAHE) & Own 70/20/10 & 640\,px, 100 ep. & 77.10 & 84.85 & 69.36 \\
+Ours & RT-DETRv2-R18 & Own 70/20/10 & -- & 73.80 & 81.20 & 66.40 \\
+Ours & YOLO11n & Own 70/20/10 & 512\,px, 40 ep. & 72.25 & 79.10 & 65.40 \\
+Ours & YOLO26n (baseline) & Own 70/20/10 & 512\,px, 40 ep. & 71.47 & 78.33 & 64.60 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+All rows in Table~\ref{tab:dfire_published} are evaluated on the same 70/20/10 test split (2{,}153 images), ensuring a fair comparison. Our best detector, YOLO26s (CLAHE), exceeds only the YOLOv4 results (73.98\% and 76.56\%). It is 0.70 points below the YOLOv8n of Gon{\c{c}}alves et al., which was trained with the same image size and epoch budget on the same test split, and 3.30 points below their best model, YOLOv7x. Smoke detection is close to the published level (84.85\% against 85.50--86.38\%); the gap lies in fire, where our 69.36\% AP is 6.04 points below YOLOv7x. Our nano-scale runs (512\,px, 40 epochs) are about six points below the re-evaluated YOLOv8n, which points to the shorter recipe rather than the architecture. The D-Fire numbers in this thesis therefore serve as internal baselines for the HPG comparison, not as competitive results. Our 70/20/10 re-split also avoids the near-duplicate contamination that Ruangsang and Pramkeaw identified in 46.0\% of the original official D-Fire test images~\cite{ruangsang2026crossdataset}.
 
 \textbf{Scope note.} The D-Fire benchmark used in this section provides bounding boxes for smoke and flame only; it does not include person/survivor annotations. Consequently, the dense-detection results in Table~\ref{tab:dfire_results} cover smoke and fire only, and they come from independently trained detectors, not from the detection heads of the UniAdapFuse architecture (Section~\ref{sec:uniadaptfuse_arch}), whose joint detector records $\mathrm{mAP}_{50}=0.0$ (Section~\ref{sec:uniadaptfuse}). The architecture's ``Survivor RoIs'' detection head is exercised structurally but has not been benchmarked against ground-truth person bounding boxes in this work; a dedicated evaluation on a person-annotated aerial dataset (e.g.\ SARD) is identified as future work.
 
@@ -136,7 +168,7 @@ where disaster macro-F1 averages over the four disaster classes and victim macro
 20 & AdapFuse-v1 + PANNS & Audio Backbone & 0.0038 & 0.9858 & 0.9792 & 0.9825 & 0.9907 & 0.9853 \\
 21 & Ablation: No GRU Temporal Cell & Component Ablation & 0.0102 & 0.9863 & 0.9765 & 0.9814 & 0.9901 & 0.9833 \\
 22 & Thermal + Audio Subset & Two-Sensor Subset & 0.0058 & 0.9880 & 0.9730 & 0.9805 & 0.9912 & 0.9809 \\
-23 & Thermal-only (A2) & Unimodal Baseline & 0.0102 & 0.9802 & 0.9684 & 0.9743 & 0.9838 & 0.9774 \\
+23 & Pseudo-thermal-only (A2) & Unimodal Baseline & 0.0102 & 0.9802 & 0.9684 & 0.9743 & 0.9838 & 0.9774 \\
 24 & Early Fusion (B) & Core Fusion Topology & 0.0126 & 0.9832 & 0.9554 & 0.9693 & 0.9890 & 0.9685 \\
 25 & UniAdapFuse v1 (Naive Joint) & Unified Multi-Task & 0.0137 & 0.5669 & 0.8980 & 0.7325 & 0.5371 & 0.9306 \\
 26 & Audio-only (A3) & Unimodal Baseline & 0.1325 & 0.3820 & 0.4365 & 0.4093 & 0.7169 & 0.7746 \\
@@ -217,7 +249,7 @@ A3c & AudioCNN + GDBlock & \textbf{0.07M} & 25 / 40 & 0.2625 & 0.4153 & 0.5777 &
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lcccccc@{}}
 \toprule
-\textbf{Backbone} & \textbf{GMACs} & \textbf{Params (M)} & \textbf{RGB-only} & \textbf{Thermal-only} & \textbf{Fused (RGB stream)} & \textbf{Fused (thermal stream)} \\
+\textbf{Backbone} & \textbf{GMACs} & \textbf{Params (M)} & \textbf{RGB-only} & \textbf{Pseudo-thermal-only} & \textbf{Fused (RGB stream)} & \textbf{Fused (thermal stream)} \\
 \midrule
 MobileNetV3-Small & \textbf{0.06} & 0.93 & 98.85 & -- & 98.74 & -- \\
 MobileViT-XXS & 0.30$^\dagger$ & 0.95 & \textbf{98.99} & 98.46 & 98.99 & -- \\
@@ -228,7 +260,7 @@ ResNet-18 & 1.81 & 11.18 & -- & 97.43 & -- & 98.74 \\
 }
 \end{table}
 
-Table~\ref{tab:backbone_accuracy_cost} gives the outcome of the selection in Section~\ref{sec:backbone_selection}. For RGB, the cheapest encoder is within 0.14 points of the best, so MobileNetV3-Small remains a reasonable default at one-fifth of MobileViT-XXS's MACs. For pseudo-thermal, the over-budget ResNet-18 is both the most expensive and the least accurate choice; EfficientNet-B0 is 1.17 points better at 21\% of its MACs, which makes it the better default for that stream.
+Table~\ref{tab:backbone_accuracy_cost} gives the outcome of the selection in Section~\ref{sec:backbone_selection}. For RGB, the lowest-cost encoder is within 0.14 points of the best, so MobileNetV3-Small remains a reasonable default at one-fifth of MobileViT-XXS's MACs. For pseudo-thermal, the over-budget ResNet-18 is both the most expensive and the least accurate choice; EfficientNet-B0 is 1.17 points better at 21\% of its MACs, which makes it the better default for that stream.
 
 \textbf{Matched-backbone fusion comparison.} With the backbone held fixed, fusion adds 0.36 combined-F1 points for EfficientNet-B0 on RGB (99.24\% against 98.88\%), nothing for MobileViT-XXS on RGB (98.99\% for both), and 0.20 points for EfficientNet-B0 on the pseudo-thermal stream (98.80\% against 98.60\%). The unimodal runs had a shorter budget (12 epochs, against 50-epoch budgets for the three fused models, whose best checkpoints came at epochs 39, 36 and 48), so these small gaps do not show that fusion helps; they are consistent with the conclusion above that the fused inputs add little beyond the RGB frame.
 
@@ -241,50 +273,87 @@ The row-level scores above cannot be compared with published work, because our c
 
 \begin{table}[H]
 \centering
-\caption{AIDER subset, 4:1:2 protocol (2{,}473 test images, five classes). Published rows are copied from Lee et al.~\cite{lee2023wattefnet}, who trained every model from scratch for 300 epochs and do not state the F1 averaging; our rows use ImageNet-pretrained encoders and report macro-F1. Params counts the full model.}
+\caption{AIDER results. Panel (a) uses the 4:1:2 protocol of Lee et al.\ (2{,}473 test images, five classes), which we follow; its published rows are copied from Lee et al.~\cite{lee2023wattefnet}, who trained every model from scratch for 300 epochs and do not state the F1 averaging. Panel (b) lists published results under the earlier protocol of Kyrkou and Theocharides (about 70/30 per class, 2{,}123 test images, weighted F1), which uses different test images and is shown for reference only. Our rows use ImageNet-pretrained encoders; F1 is macro-averaged and weighted F1 is given in brackets. Params counts the full model.}
 \label{tab:public_aider}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llccc@{}}
 \toprule
 \textbf{Model} & \textbf{Source} & \textbf{Params (M)} & \textbf{F1 (\%)} & \textbf{Accuracy (\%)} \\
 \midrule
+\multicolumn{5}{@{}l}{\textit{(a) 4:1:2 protocol of Lee et al., 2{,}473 test images}} \\
 EfficientNet & Lee et al.~\cite{lee2023wattefnet} & 3.50 & 80.0 & -- \\
 MobileNetV2 & Lee et al.~\cite{lee2023wattefnet} & 2.28 & 81.0 & -- \\
 EmergencyNet~\cite{kyrkou2020emergencynet} & Lee et al.~\cite{lee2023wattefnet} & 0.09 & 83.1 & -- \\
 WATT-EffNet-3-6 & Lee et al.~\cite{lee2023wattefnet} & 0.69 & 88.5 & -- \\
+RGB-only MobileNetV3-Small (A1) & Ours & 1.22 & 93.02 [96.48] & 96.48 \\
+RGB-only EfficientNet-B0 (A1b) & Ours & 4.67 & \textbf{94.00} [\textbf{97.00}] & \textbf{97.01} \\
+AdapFuse-v1 (RGB + pseudo-thermal) & Ours & 12.94 & 91.86 [95.79] & 95.79 \\
 \midrule
-RGB-only MobileNetV3-Small (A1) & Ours & 1.22 & 93.02 & 96.48 \\
-RGB-only EfficientNet-B0 (A1b) & Ours & 4.67 & \textbf{94.00} & \textbf{97.01} \\
-AdapFuse-v1 (RGB + pseudo-thermal) & Ours & 12.94 & 91.86 & 95.79 \\
+\multicolumn{5}{@{}l}{\textit{(b) Protocol of Kyrkou and Theocharides, 2{,}123 test images, weighted F1 (not comparable with (a))}} \\
+EmergencyNet & Kyrkou and Theocharides~\cite{kyrkou2020emergencynet}$^\ddagger$ & 0.09 & 93.6 & -- \\
+TinyEmergencyNet & Mogaka et al.~\cite{mogaka2024tinyemergencynet}$^\ddagger$ & 0.04 & 89.5 & -- \\
+TakuNet (FP32) & Rossi et al.~\cite{rossi2025takunet} & 0.04 & 93.8 & -- \\
+GlimmerNet & Nedeljkovi{\'c}~\cite{nedeljkovic2025glimmernet} & 0.03 & 94.2 & -- \\
+\bottomrule
+\multicolumn{5}{@{}l}{\footnotesize $^\ddagger$F1 as reported in the comparison tables of Rossi et al.~\cite{rossi2025takunet} and Nedeljkovi{\'c}~\cite{nedeljkovic2025glimmernet}.}
+\end{tabular}%
+}
+\end{table}
+
+All three of our models exceed the published F1 scores under the protocol we follow (Table~\ref{tab:public_aider}a), with RGB-only EfficientNet-B0 at 94.00\% macro-F1 against 88.5\% for WATT-EffNet. The comparison is not like-for-like: our encoders start from ImageNet weights, whereas Lee et al.\ trained from scratch to study lightweight design, and the F1 averaging of the published table is not stated. The margin is therefore evidence that ImageNet transfer inside our pipeline is effective on AIDER, not that our architectures are better designed. More recent lightweight networks (Table~\ref{tab:public_aider}b) reach 93.6--94.2\% weighted F1 with 0.03--0.09\,M parameters, but on a different split; our weighted F1 of 97.00\% is higher, yet because the test images differ and those networks are 50--150$\times$ smaller (TakuNet, for example, is trained from scratch~\cite{rossi2025takunet}), we do not claim to outperform them. Fusion again does not help: AdapFuse-v1 is 2.14 points below RGB-only EfficientNet-B0, because the pseudo-thermal map carries no information beyond the RGB frame.
+
+\begin{table}[H]
+\centering
+\caption{Per-class results on the AIDER 4:1:2 test set, recomputed by re-running the saved checkpoints (they reproduce the aggregate scores in Table~\ref{tab:public_aider}). P, R and F1 in \%; $n$ is the number of test images.}
+\label{tab:public_aider_perclass}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrccccc@{}}
+\toprule
+ & & \multicolumn{3}{c}{\textbf{RGB-only EfficientNet-B0}} & \textbf{RGB-only MobileNetV3-S} & \textbf{AdapFuse-v1} \\
+\cmidrule(lr){3-5}
+\textbf{Class} & \textbf{$n$} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{F1} & \textbf{F1} \\
+\midrule
+Normal & 1{,}756 & 98.24 & 98.52 & \textbf{98.38} & 98.06 & 97.67 \\
+Fire & 209 & 97.14 & 97.61 & 97.37 & \textbf{97.39} & 94.69 \\
+Collapsed building & 103 & 86.24 & 91.26 & \textbf{88.68} & 86.64 & 85.98 \\
+Flood & 211 & 96.21 & 96.21 & \textbf{96.21} & 95.13 & 95.26 \\
+Traffic incident & 194 & 92.31 & 86.60 & \textbf{89.36} & 87.87 & 85.71 \\
+\midrule
+Macro average & 2{,}473 & -- & -- & \textbf{94.00} & 93.02 & 91.86 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-All three of our models exceed the published AIDER F1 scores (Table~\ref{tab:public_aider}), with RGB-only EfficientNet-B0 at 94.00\% macro-F1 against 88.5\% for WATT-EffNet. The comparison is not like-for-like: our encoders start from ImageNet weights, whereas Lee et al.\ trained from scratch to study lightweight design, and the F1 averaging of the published table is not stated. The margin is therefore evidence that ImageNet transfer inside our pipeline is effective on AIDER, not that our architectures are better designed. Fusion again does not help: AdapFuse-v1 is 2.14 points below RGB-only EfficientNet-B0, because the pseudo-thermal map carries no information beyond the RGB frame.
+Table~\ref{tab:public_aider_perclass} shows where the errors lie. Normal, fire and flood scenes are recognised with at least 95\% F1 by all three models, while collapsed buildings (86.0--88.7\%) and traffic incidents (85.7--89.4\%) remain the weakest classes; for traffic, recall (86.6\%) is the limiting factor, meaning that accident scenes are mostly lost to the normal class. Lee et al.\ do not tabulate per-class F1, but their confusion matrix identifies traffic incidents as their best class and normal scenes as their worst~\cite{lee2023wattefnet}, the reverse of our pattern, which is consistent with our models having seen far more normal than incident images during training (no resampling).
 
 \textbf{FLAME protocol.} Models trained on the official FLAME training folder (39{,}375 frames from a Matrice 200 with a Zenmuse X4S), with a random 20\% of it held out for validation as in the original paper, and were tested on the official test folder (8{,}617 frames from a Phantom 3)~\cite{shamsoshoara2021aerial}. Training was limited to 10 epochs.
 
 \begin{table}[H]
 \centering
-\caption{FLAME fire/no-fire classification, official protocol (8{,}617 test frames from a different drone and camera than training). Validation F1 is on the held-out 20\% of the training folder (same drone). The published row is from Shamsoshoara et al.~\cite{shamsoshoara2021aerial}. $^\ast$Binary cross-entropy; our losses are focal loss and are not comparable.}
+\caption{FLAME fire/no-fire classification, official protocol (8{,}617 test frames, 5{,}137 fire and 3{,}480 no-fire, from a different drone and camera than training). Validation F1 is on the held-out 20\% of the training folder (same drone). Fire recall is the share of fire frames detected (sensitivity); no-fire recall is the share of clean frames correctly rejected (specificity). Our F1 is macro-averaged; published F1 averaging is as stated in each paper. The Zhang/Wang (2022) row is as reported by Deng et al.~\cite{deng2025lightweight}. -- = not reported or not applicable.}
 \label{tab:public_flame}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{@{}lccccc@{}}
+\begin{tabular}{@{}llcccccc@{}}
 \toprule
-\textbf{Model} & \textbf{Best epoch} & \textbf{Val.\ F1 (\%)} & \textbf{Test F1 (\%)} & \textbf{Test Acc.\ (\%)} & \textbf{Test Loss} \\
+\textbf{Model} & \textbf{Source} & \textbf{Best ep.} & \textbf{Val.\ F1} & \textbf{Test Acc.} & \textbf{Test F1} & \textbf{Fire rec.} & \textbf{No-fire rec.} \\
 \midrule
-Xception~\cite{shamsoshoara2021aerial} (published) & -- & -- & -- & 76.23 & 0.7414$^\ast$ \\
+Xception & Shamsoshoara et al.\ (2021)~\cite{shamsoshoara2021aerial} & -- & -- & 76.23 & -- & -- & -- \\
+ResNet-50 & Zhang/Wang (2022)~\cite{deng2025lightweight} & -- & -- & 79.48 & -- & -- & -- \\
+EfficientNet-B5 + DenseNet-201 & Ghali et al.\ (2022)~\cite{ghali2022uavwildfire} & -- & -- & 85.12 & 84.77 & -- & -- \\
+MV2-CBAM (mean of 30 runs) & Deng et al.\ (2025)~\cite{deng2025lightweight} & -- & -- & 85.82 & -- & -- & -- \\
+MV2-CBAM (5-model ensemble) & Deng et al.\ (2025)~\cite{deng2025lightweight} & -- & -- & \textbf{88.05} & -- & -- & -- \\
+FireXplainNet & Khan and Park (2024)~\cite{khan2024firexplainnet} & -- & -- & 87.32 & \textbf{86.50} & 88.87 & \textbf{88.01} \\
 \midrule
-Ours: RGB-only MobileNetV3-Small & 1 & 99.86 & 62.76 & 69.41 & 0.1800 \\
-Ours: RGB-only EfficientNet-B0 & 1 & 99.92 & \textbf{82.85} & \textbf{83.72} & 0.0856 \\
-Ours: AdapFuse-v1 (RGB + pseudo-th.) & 9 & 99.96 & 72.93 & 75.53 & 0.1332 \\
+RGB-only MobileNetV3-Small & Ours & 1 & 99.86 & 69.41 & 62.76 & \textbf{93.65} & 33.62 \\
+RGB-only EfficientNet-B0 & Ours & 1 & 99.92 & 83.72 & 82.85 & 89.10 & 75.80 \\
+AdapFuse-v1 (RGB + pseudo-th.) & Ours & 9 & 99.96 & 75.53 & 72.93 & 89.33 & 55.14 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-Table~\ref{tab:public_flame} shows the effect this thesis has to contend with. Every model scores 99.86--99.96\% F1 on validation frames from the training drone and 62.76--82.85\% on the test drone, a drop of 17 to 37 points. RGB-only EfficientNet-B0 reaches 83.72\% test accuracy, 7.49 points above the published Xception result; MobileNetV3-Small (69.41\%) and AdapFuse-v1 (75.53\%) fall below it. Because the in-domain validation split is saturated from the first epoch, it cannot guide model selection for the new camera: both RGB-only runs kept their epoch-1 checkpoints and stopped early. These results support the conclusion of Section~\ref{sec:grouped_split}: scores on frames from the same capture as training are near ceiling and overstate performance on new hardware. They also show that on a genuine cross-camera test the stronger backbone matters more than fusion with an RGB-derived map.
+Table~\ref{tab:public_flame} shows the effect this thesis has to contend with. Every model scores 99.86--99.96\% F1 on validation frames from the training drone and 62.76--82.85\% on the test drone, a drop of 17 to 37 points. RGB-only EfficientNet-B0 reaches 83.72\% test accuracy. That is above the original Xception baseline (76.23\%) and the ResNet-50 result (79.48\%), but 1.40 to 4.33 points below three later methods: the ensemble of Ghali et al.\ (85.12\%), MV2-CBAM (85.82\% averaged over 30 runs, 88.05\% as a five-model ensemble) and FireXplainNet (87.32\%). MobileNetV3-Small (69.41\%) and AdapFuse-v1 (75.53\%) fall below even the Xception baseline. The per-class columns locate the shortfall. Our models find fire as reliably as the best published model (89.1--93.7\% fire recall against 88.9\% for FireXplainNet), but they reject far fewer clean frames (33.6--75.8\% no-fire recall against 88.0\%): on the new camera they call many fire-free scenes fire. The bias is strongest in the weaker models. This is consistent with the camera change pushing predictions towards fire, the majority class in training (64\% of frames), while the fire cue itself still transfers. Because the in-domain validation split is saturated from the first epoch, it cannot guide model selection for the new camera: both RGB-only runs kept their epoch-1 checkpoints and stopped early. These results support the conclusion of Section~\ref{sec:grouped_split}: scores on frames from the same capture as training are near ceiling and overstate performance on new hardware. They also show that on a genuine cross-camera test the stronger backbone matters more than fusion with an RGB-derived map.
 
 \subsection{Row-Level False Positives and Probabilistic Calibration}
 \label{sec:adaptfuse_extended}
@@ -342,7 +411,7 @@ Table~\ref{tab:latency_profile} breaks down the 14.32\,ms total inference latenc
 \textbf{Module} & \textbf{Latency (ms)} & \textbf{\% of Total Pipeline} \\
 \midrule
 RGB Backbone (MobileNetV3-Small) & 6.37 & 44.5\% \\
-Thermal Backbone (ResNet-18)     & 5.17 & 36.1\% \\
+Pseudo-Thermal Backbone (ResNet-18)& 5.17 & 36.1\% \\
 Audio Backbone (AudioCNN)        & 0.47 &  3.3\% \\
 Feature Projectors (3 streams)   & 0.30 &  2.1\% \\
 Quality Token Heads              & 0.32 &  2.2\% \\
@@ -558,7 +627,7 @@ The near-ceiling aggregate metrics reported in Table~\ref{tab:main_results} can 
     \item \textbf{Fusion versus RGB-only:} On the row-level split, AdapFuse-v1 (98.74\% combined F1) does not exceed the RGB-only baseline (98.85\%), and the no-RUE variant (98.75\%) matches it; the fused inputs are RGB-derived or label-matched, so no fusion accuracy gain is shown.
     \item \textbf{Unimodal Backbones:} With three backbones per modality, the best RGB-only model (MobileViT-XXS, 98.99\%) matches the best-but-one fused model, and the best pseudo-thermal-only model (EfficientNet-B0, 98.60\%) improves on ResNet-18 by 1.17 points. With the backbone held fixed, fusion adds 0.00--0.36 points. The CNN6-style and GDBlock audio-only runs collapse to identical degenerate predictions.
     \item \textbf{Audio Label Leak:} On every row that has audio, the ESC-50 clip class identifies fire/smoke versus clean, and only these two classes have audio. The low audio-only macro-F1 reflects missing audio and absent classes, not uninformative audio, and any fused model can use the clip as a label shortcut.
-    \item \textbf{Public Benchmarks:} Under the published AIDER 4:1:2 protocol, RGB-only EfficientNet-B0 reaches 94.00\% macro-F1 against 88.5\% for WATT-EffNet (trained from scratch). Under the official cross-camera FLAME protocol it reaches 83.72\% accuracy against 76.23\% for Xception, while in-domain validation F1 is 99.9\% for every model. AdapFuse-v1 is below RGB-only EfficientNet-B0 on both.
+    \item \textbf{Public Benchmarks:} Under the published AIDER 4:1:2 protocol, RGB-only EfficientNet-B0 reaches 94.00\% macro-F1 against 88.5\% for WATT-EffNet (trained from scratch), the best published result on that split. Under the official cross-camera FLAME protocol it reaches 83.72\% accuracy, above the original Xception (76.23\%) but below three later methods (85.12--88.05\%), with no-fire recall (75.8\%) as the main weakness; in-domain validation F1 is 99.9\% for every model. On our 70/20/10 D-Fire split (2{,}153 test images) our best detector (77.10\% mAP$_{50}$) is below re-evaluated YOLOv5l, YOLOv7x and YOLOv8 results (77.80--80.40\%), mainly on fire AP. AdapFuse-v1 is below RGB-only EfficientNet-B0 on AIDER and FLAME. None of these results is state of the art.
     \item \textbf{Component Variants:} The base run outperforms the no-GRU, no-attention, and no-quality-feature runs by 0.60, 0.35, and 0.34 F1 points, respectively. These single-run differences are descriptive and of the same order as the run-to-run noise shown by the no-nuisance re-run; the variants also used a different learning-rate schedule from the base run, the GRU receives one step, reliability has no degradation targets, and the nuisance loss is zero.
     \item \textbf{Scene-Level Backbone Results:} EfficientNet-B0 reaches $99.24\%$ Combined F1 and MobileViT-XXS reaches $98.99\%$ on the row-level split. These results concern victim presence, not person localization.
     \item \textbf{Row-Level Error and Workstation Speed:} AdapFuse-v1 reports 0.73\% row-level scene-classification FPR, ECE 0.0337, and 14.32\,ms inference on an RTX 5090 workstation (32\,GB VRAM). Neither operational false-alarm reduction nor embedded-UAV speed has been validated.
