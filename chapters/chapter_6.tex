@@ -5,11 +5,11 @@
 \section{Dense Smoke and Fire Object Detection Benchmark}
 \label{sec:object_detection}
 
-To establish dense object detection baselines for UAV disaster monitoring, seven modern detection architectures were evaluated on the \textbf{D-Fire smoke and fire object detection benchmark}~\cite{dfire2022} (21{,}527 images containing bounding box annotations for diffuse smoke plumes and localized flame fronts). Table~\ref{tab:dfire_results} presents the comparative evaluation under standardized COCO evaluation protocols ($mAP_{50}$ and $mAP_{50:95}$).
+To establish dense object detection baselines for UAV disaster monitoring, seven modern detection architectures were evaluated on the \textbf{D-Fire smoke and fire object detection benchmark}~\cite{dfire2022} (21{,}527 images containing bounding box annotations for diffuse smoke plumes and localized flame fronts). Table~\ref{tab:dfire_results} presents the comparative evaluation under standardized COCO evaluation protocols ($mAP_{50}$ and $mAP_{50:95}$). The dataset was re-split 70/20/10, and time is the summed wall-clock duration of all training segments. Recipes differ: YOLO26n, Hazard-YOLO26n and YOLOv10n share one recipe (512\,px, AdamW, 40 epochs, batch 16); YOLO26s (CLAHE) uses 640\,px, SGD, 100 epochs and batch 4; YOLO26n (CLAHE, fine-tune) continues from the YOLO26n checkpoint for 20 epochs at 640\,px, so its time is in addition to that run's 4.45\,h.
 
 \begin{table}[H]
 \centering
-\caption{Dense Smoke and Fire Object Detection Benchmark on D-Fire (21{,}527 images, re-split 70/20/10; metrics on our 2{,}153-image test split). Time is the summed wall-clock duration of all training segments. Recipes differ: YOLO26n, Hazard-YOLO26n and YOLOv10n share one recipe (512\,px, AdamW, 40 epochs, batch 16); YOLO26s (CLAHE) uses 640\,px, SGD, 100 epochs and batch 4; YOLO26n (CLAHE, fine-tune) continues from the YOLO26n checkpoint for 20 epochs at 640\,px, so its time is in addition to that run's 4.45\,h. Best value per column in bold.}
+\caption[Smoke and fire detection on D-Fire]{Smoke and fire detection on D-Fire (2{,}153-image test split of our 70/20/10 re-split). Time: total training wall-clock. Best per column in bold.}
 \label{tab:dfire_results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llccccccc@{}}
@@ -34,28 +34,28 @@ The high-capacity YOLO26s (CLAHE) achieves 77.10\% mAP$_{50}$ (with smoke detect
 \textbf{Finding 2: The Hazard Prior Gate (HPG) Does Not Improve YOLO26n on D-Fire.}
 The HPG computes red-excess, achromaticity and Sobel edge cues from the input frame and applies a bounded residual correction before the YOLO26n stem (Section~\ref{sec:hpg}). Both runs used the same recipe and both ran all 40 epochs. Hazard-YOLO26n reached 70.53\% test mAP$_{50}$, 0.94 points below the 71.47\% of the baseline YOLO26n, and took 8.65 hours against 4.45 hours: about 770\,s per epoch against 400\,s, most likely because the cue maps are computed on the full-resolution frame before pooling. Its per-epoch validation mAP$_{50}$ tracks the baseline closely (for example 0.703 against 0.702 at epoch 31, and 0.709 against 0.707 at epoch 40), so the logs show neither faster convergence nor higher accuracy.
 
-A note on the logged time: the HPG run was interrupted twice and resumed, and its summary file records only the last segment (1.96\,h, epochs 32--40). Read on its own, that file would suggest a $2.27\times$ speed-up over the baseline. The per-epoch log (\texttt{results.csv}) shows three segments of 2.57, 4.13 and 1.94\,h, and the 8.65\,h used here is their sum. The HPG is therefore a negative result on this benchmark. Whether hazard priors help in other settings, such as small training sets or thermal imagery, is untested.
+A note on the logged time: the HPG run was interrupted twice and resumed, and its summary file records only the last segment (1.96\,h, epochs 32--40). Read on its own, that file would suggest a $2.27\times$ speed-up over the baseline. The per-epoch log (results.csv) shows three segments of 2.57, 4.13 and 1.94\,h, and the 8.65\,h used here is their sum. The HPG is therefore a negative result on this benchmark. Whether hazard priors help in other settings, such as small training sets or thermal imagery, is untested.
 
 \textbf{Finding 3: Our D-Fire Detectors Are Below Published Results on the Same Split.}
-Table~\ref{tab:dfire_published} places our detectors next to five published D-Fire studies. All methods, including ours, were re-evaluated on the same 70/20/10 test split (2{,}153 images) to ensure a fair comparison; two studies also report class-wise AP~\cite{venancio2023hybrid,goncalves2024yolo}.
+Table~\ref{tab:dfire_published} places our detectors next to five published D-Fire studies. The published figures are quoted as reported by their authors, each on the test set of its own study, whereas ours are measured on the 2{,}153-image test set of our 70/20/10 re-split. Because the test images differ, the comparison indicates relative standing rather than a controlled head-to-head result; two studies also report class-wise AP~\cite{venancio2023hybrid,goncalves2024yolo}.
 
 \begin{table}[H]
 \centering
-\caption{Published D-Fire results against ours ($\mathrm{mAP}_{50}$ and class-wise AP$_{50}$, \%). All rows are evaluated on our own 70/20/10 re-split (2{,}153 test images). The Ven{\^a}ncio et al.\ (2023) rows are as compiled by Gon{\c{c}}alves et al.~\cite{goncalves2024yolo}. -- = not reported. Best value per column in bold.}
+\caption[Published D-Fire results vs.\ ours]{Published D-Fire results (as reported by their authors, each on its own test set) vs.\ ours (on the 2{,}153-image test set of our 70/20/10 re-split) ($\mathrm{mAP}_{50}$ and class-wise AP$_{50}$, \%). Ven{\^a}ncio et al.\ rows as compiled by Gon{\c{c}}alves et al.~\cite{goncalves2024yolo}. -- = not reported; best in bold.}
 \label{tab:dfire_published}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llllccc@{}}
 \toprule
 \textbf{Source} & \textbf{Model} & \textbf{Test split} & \textbf{Recipe} & \textbf{mAP$_{50}$} & \textbf{AP$^{smoke}_{50}$} & \textbf{AP$^{fire}_{50}$} \\
 \midrule
-de Ven{\^a}ncio et al.\ (2022)~\cite{dfire2022} & Pruned YOLOv4 & Own 70/20/10 & -- & 73.98 & -- & -- \\
-de Ven{\^a}ncio et al.\ (2023)~\cite{venancio2023hybrid} & YOLOv4 & Own 70/20/10 & -- & 76.56 & 83.48 & 69.94 \\
-de Ven{\^a}ncio et al.\ (2023)~\cite{venancio2023hybrid} & YOLOv5l & Own 70/20/10 & -- & 79.46 & \textbf{86.38} & 72.84 \\
-Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv8n & Own 70/20/10 & 640\,px, 100 ep., COCO init. & 77.80 & 84.00 & 71.50 \\
-Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv8s & Own 70/20/10 & 640\,px, 100 ep., COCO init. & 78.70 & 84.90 & 72.50 \\
-Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv7x & Own 70/20/10 & 640\,px, 100 ep., COCO init. & \textbf{80.40} & 85.50 & \textbf{75.40} \\
-Ruangsang and Pramkeaw (2026)~\cite{ruangsang2026crossdataset} & YOLOv8m (3 seeds) & Own 70/20/10 & fixed recipe & 79.04\,$\pm$\,0.21 & -- & -- \\
-Mamadaliev et al.\ (2024)~\cite{mamadaliev2024esfd} & ESFD-YOLOv8n & Own 70/20/10 & 300 ep. & 79.40 & -- & -- \\
+de Ven{\^a}ncio et al.\ (2022)~\cite{dfire2022} & Pruned YOLOv4 & As reported & -- & 73.98 & -- & -- \\
+de Ven{\^a}ncio et al.\ (2023)~\cite{venancio2023hybrid} & YOLOv4 & As reported & -- & 76.56 & 83.48 & 69.94 \\
+de Ven{\^a}ncio et al.\ (2023)~\cite{venancio2023hybrid} & YOLOv5l & As reported & -- & 79.46 & \textbf{86.38} & 72.84 \\
+Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv8n & As reported & 640\,px, 100 ep., COCO init. & 77.80 & 84.00 & 71.50 \\
+Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv8s & As reported & 640\,px, 100 ep., COCO init. & 78.70 & 84.90 & 72.50 \\
+Gon{\c{c}}alves et al.\ (2024)~\cite{goncalves2024yolo} & YOLOv7x & As reported & 640\,px, 100 ep., COCO init. & \textbf{80.40} & 85.50 & \textbf{75.40} \\
+Ruangsang and Pramkeaw (2026)~\cite{ruangsang2026crossdataset} & YOLOv8m (3 seeds) & As reported & fixed recipe & 79.04\,$\pm$\,0.21 & -- & -- \\
+Mamadaliev et al.\ (2024)~\cite{mamadaliev2024esfd} & ESFD-YOLOv8n & As reported & 300 ep. & 79.40 & -- & -- \\
 \midrule
 Ours & YOLO26s (CLAHE) & Own 70/20/10 & 640\,px, 100 ep. & 77.10 & 84.85 & 69.36 \\
 Ours & RT-DETRv2-R18 & Own 70/20/10 & -- & 73.80 & 81.20 & 66.40 \\
@@ -66,7 +66,7 @@ Ours & YOLO26n (baseline) & Own 70/20/10 & 512\,px, 40 ep. & 71.47 & 78.33 & 64.
 }
 \end{table}
 
-All rows in Table~\ref{tab:dfire_published} are evaluated on the same 70/20/10 test split (2{,}153 images), ensuring a fair comparison. Our best detector, YOLO26s (CLAHE), exceeds only the YOLOv4 results (73.98\% and 76.56\%). It is 0.70 points below the YOLOv8n of Gon{\c{c}}alves et al., which was trained with the same image size and epoch budget on the same test split, and 3.30 points below their best model, YOLOv7x. Smoke detection is close to the published level (84.85\% against 85.50--86.38\%); the gap lies in fire, where our 69.36\% AP is 6.04 points below YOLOv7x. Our nano-scale runs (512\,px, 40 epochs) are about six points below the re-evaluated YOLOv8n, which points to the shorter recipe rather than the architecture. The D-Fire numbers in this thesis therefore serve as internal baselines for the HPG comparison, not as competitive results. Our 70/20/10 re-split also avoids the near-duplicate contamination that Ruangsang and Pramkeaw identified in 46.0\% of the original official D-Fire test images~\cite{ruangsang2026crossdataset}.
+Because the published rows in Table~\ref{tab:dfire_published} come from their own test sets, the differences below indicate relative standing, not a controlled comparison. Our best detector, YOLO26s (CLAHE), exceeds only the YOLOv4 results (73.98\% and 76.56\%). It is 0.70 points below the YOLOv8n of Gon{\c{c}}alves et al., which was trained with the same image size and epoch budget, and 3.30 points below their best model, YOLOv7x. Smoke detection is close to the published level (84.85\% against 85.50--86.38\%); the gap lies in fire, where our 69.36\% AP is 6.04 points below YOLOv7x. Our nano-scale runs (512\,px, 40 epochs) are about six points below the published YOLOv8n, which points to the shorter recipe rather than the architecture. The D-Fire numbers in this thesis therefore serve as internal baselines for the HPG comparison, not as competitive results. Our 70/20/10 re-split also avoids the near-duplicate contamination that Ruangsang and Pramkeaw identified in 46.0\% of the original official D-Fire test images~\cite{ruangsang2026crossdataset}.
 
 \textbf{Scope note.} The D-Fire benchmark used in this section provides bounding boxes for smoke and flame only; it does not include person/survivor annotations. Consequently, the dense-detection results in Table~\ref{tab:dfire_results} cover smoke and fire only, and they come from independently trained detectors, not from the detection heads of the UniAdapFuse architecture (Section~\ref{sec:uniadaptfuse_arch}), whose joint detector records $\mathrm{mAP}_{50}=0.0$ (Section~\ref{sec:uniadaptfuse}). The architecture's ``Survivor RoIs'' detection head is exercised structurally but has not been benchmarked against ground-truth person bounding boxes in this work; a dedicated evaluation on a person-annotated aerial dataset (e.g.\ SARD) is identified as future work.
 
@@ -77,7 +77,7 @@ Figure~\ref{fig:dfire_qualitative} shows representative detections from the best
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_11_dfire_qualitative.png}
-\caption{Qualitative detections from the trained YOLO26s (CLAHE) checkpoint (77.10\% mAP$_{50}$, top row of Table~\ref{tab:dfire_results}) on six real D-Fire test images spanning smoke-only, fire-only, combined, and small/distant hazard cases. Dashed green boxes are ground truth; solid coloured boxes are model predictions with confidence scores. Low-confidence and imperfectly localized predictions (e.g.\ the 0.26--0.45 confidence fire boxes) are shown as-is to illustrate genuine model behaviour rather than only best-case outputs.}
+\caption[YOLO26s (CLAHE) detections on D-Fire]{YOLO26s (CLAHE) detections on six D-Fire test images. Dashed green: ground truth; solid: predictions with confidence. Low-confidence boxes are shown as-is.}
 \label{fig:dfire_qualitative}
 \end{figure}
 
@@ -86,7 +86,7 @@ Figure~\ref{fig:performance_benchmark} places the two evaluation tracks side by 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_03_performance.png}
-\caption{Two evaluation tracks: (A) independently trained D-Fire detectors with class-wise AP and summed wall-clock training time; (B) scene classification, including the UniAdapFuse joint prototype. Numbers beside the bars in (A) give mAP$_{50}$ (\%) and training time. In (B), naive joint training (UniAdapFuse v1) falls to 53.71\% disaster accuracy, and the revised v2 recipe (phased training, stop-gradient isolation and distillation from AdapFuse-v1) restores 99.26\% (+45.55\,pp). Panel B does not establish dense-detection quality: our v2 test log records detection $\mathrm{mAP}_{50}=0.0$.}
+\caption[Detection and scene-classification results]{(A) D-Fire detectors: $\mathrm{mAP}_{50}$ and training time. (B) Scene classification: naive joint training (UniAdapFuse v1) falls to 53.71\% disaster accuracy; the v2 recipe restores 99.26\%, but its detection $\mathrm{mAP}_{50}$ is 0.0.}
 \label{fig:performance_benchmark}
 \end{figure}
 
@@ -101,11 +101,11 @@ While standalone object detectors provide spatial bounding boxes, they lack glob
 
 Naive joint training of global scene classification and dense bounding box regression (UniAdapFuse v1) reaches only 53.71\% disaster accuracy, against 99.44\% for the classification-only AdapFuse-v1. Our working hypothesis was \textit{multi-task negative transfer}, in which dense regression losses (CIoU and objectness) disturb the shared visual backbone; as noted above, the log also shows widespread non-finite losses, so the collapse cannot be attributed to negative transfer alone.
 
-UniAdapFuse v2 targets the classification side through three mechanisms: (1) \textit{Phased Curriculum Training}~\cite{bengio2009curriculum} with a 15-epoch classification-only warmup; (2) \textit{Stop-Gradient Isolation} (\texttt{.detach()}) applied to multi-scale pyramid feature maps before feeding the detection neck, so that detection gradients cannot backpropagate into the shared backbone; and (3) \textit{Differentiated Learning Rates} ($0.1\times$ backbone, $1.0\times$ classifier/bridge, $0.3\times$ detection head). The same run also distils from the trained AdapFuse-v1 checkpoint, lowers the base learning rate to $5\times10^{-4}$, trains for 80 instead of 50 epochs and reweights the losses. Because the distillation target is the standalone classifier that v2 is compared against, part of the recovery may simply be inherited from the teacher. Table~\ref{tab:uniadaptfuse_results} shows that classification is recovered while detection is not; which of the changes is responsible is not identified. Note that \texttt{.detach()} blocks detection gradients from reaching the shared backbone only; the detection neck and head still receive their own gradients, so the isolation mechanism by itself does not explain the zero $\mathrm{mAP}_{50}$.
+UniAdapFuse v2 targets the classification side through three mechanisms: (1) \textit{Phased Curriculum Training}~\cite{bengio2009curriculum} with a 15-epoch classification-only warmup; (2) \textit{Stop-Gradient Isolation} (.detach()) applied to multi-scale pyramid feature maps before feeding the detection neck, so that detection gradients cannot backpropagate into the shared backbone; and (3) \textit{Differentiated Learning Rates} ($0.1\times$ backbone, $1.0\times$ classifier/bridge, $0.3\times$ detection head). The same run also distils from the trained AdapFuse-v1 checkpoint, lowers the base learning rate to $5\times10^{-4}$, trains for 80 instead of 50 epochs and reweights the losses. Because the distillation target is the standalone classifier that v2 is compared against, part of the recovery may simply be inherited from the teacher. Table~\ref{tab:uniadaptfuse_results} shows that classification is recovered while detection is not; which of the changes is responsible is not identified. Note that .detach() blocks detection gradients from reaching the shared backbone only; the detection neck and head still receive their own gradients, so the isolation mechanism by itself does not explain the zero $\mathrm{mAP}_{50}$.
 
 \begin{table}[H]
 \centering
-\caption{UniAdapFuse scene-classification recovery ($n=10{,}951$ test rows). Standalone AdapFuse-v1 is the classification reference. UniAdapFuse v2 restores classification performance, but its recorded dense-detection $\mathrm{mAP}_{50}$ remains 0.0; producing prediction tensors is not equivalent to validated localization.}
+\caption[UniAdapFuse scene-classification recovery]{UniAdapFuse scene-classification recovery ($n=10{,}951$). v2 recovers classification, but its detection $\mathrm{mAP}_{50}$ is 0.0.}
 \label{tab:uniadaptfuse_results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lccccccc@{}}
@@ -122,7 +122,7 @@ UniAdapFuse v1 (naive) & Naive Joint End-to-End Training & 0.5669 & 0.5371 & 0.8
 }
 \end{table}
 
-UniAdapFuse v2 achieves \textbf{99.20\% disaster F1 and 98.57\% combined F1}, within 0.17 percentage points of the standalone classification reference, which is also its distillation teacher. This demonstrates recovery of the classification branch under the revised recipe, not the effect of gradient isolation alone. However, our \texttt{uni\_adaptfuse\_v2\_test\_results.json} reports $\mathrm{mAP}_{50}=0.0$ for detection. Our evidence therefore does not establish usable joint localization or compatibility between the tasks; the independent D-Fire detector results in Section~\ref{sec:object_detection} remain the valid localization benchmark.
+UniAdapFuse v2 achieves \textbf{99.20\% disaster F1 and 98.57\% combined F1}, within 0.17 percentage points of the standalone classification reference, which is also its distillation teacher. This demonstrates recovery of the classification branch under the revised recipe, not the effect of gradient isolation alone. However, our uni\_adaptfuse\_v2\_test\_results.json reports $\mathrm{mAP}_{50}=0.0$ for detection. Our evidence therefore does not establish usable joint localization or compatibility between the tasks; the independent D-Fire detector results in Section~\ref{sec:object_detection} remain the valid localization benchmark.
 
 \section{Multimodal Scene-Prior and Reliability Benchmark (Row-Level Split)}
 \label{sec:classification_benchmark}
@@ -139,7 +139,7 @@ where disaster macro-F1 averages over the four disaster classes and victim macro
 
 \begin{table}[H]
 \centering
-\caption{Master Performance Comparison of All Twenty-Six Multimodal Classification Models ($n=10{,}951$, natural distribution), globally ranked by Combined F1. All models trained on the Stratified Balanced Training Subset (49{,}276 samples, 25\% per class). These are row-level scores: the split is not grouped by capture sequence, so every value in this table is a within-collection estimate. Section~\ref{sec:grouped_split} reports the same architecture under a capture-group-aware split, where combined macro-F1 falls by 9.60 percentage points.}
+\caption[All 26 multimodal classification models]{All 26 multimodal classification models, ranked by Combined F1 (row-level split, $n=10{,}951$). Under a capture-group-aware split, combined macro-F1 drops by 9.60\,pp (Section~\ref{sec:grouped_split}).}
 \label{tab:main_results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}rllcccccc@{}}
@@ -150,7 +150,7 @@ where disaster macro-F1 averages over the four disaster classes and victim macro
 2 & \textbf{AdapFuse-v1 + MobileViT-XXS (RGB)} & Visual Backbone & 0.0103 & 0.9881 & 0.9916 & \textbf{0.9899} & 0.9931 & 0.9942 \\
 3 & Baseline A1: RGB-Only & Unimodal Baseline & 0.0054 & 0.9924 & 0.9846 & 0.9885 & 0.9951 & 0.9891 \\
 4 & AdapFuse-v1 + EfficientNet-B0 (Thermal) & Visual Backbone & 0.0095 & 0.9924 & 0.9837 & 0.9880 & 0.9950 & 0.9886 \\
-5 & Ablation: No RUE (\texttt{ablation\_no\_rue}) & Component Ablation & 0.0094 & \textbf{0.9938} & 0.9812 & 0.9875 & \textbf{0.9957} & 0.9868 \\
+5 & Ablation: No RUE (ablation\_no\_rue) & Component Ablation & 0.0094 & \textbf{0.9938} & 0.9812 & 0.9875 & \textbf{0.9957} & 0.9868 \\
 6 & \textbf{AdapFuse-v1 (E): Base Teacher} & Proposed Method & \textbf{0.0020} & 0.9913 & 0.9836 & 0.9874 & 0.9944 & 0.9884 \\
 7 & Ablation: No Nuisance Head & Component Ablation & 0.0092 & 0.9923 & 0.9821 & 0.9872 & 0.9942 & 0.9874 \\
 8 & Intermediate Fixed Fusion (D) & Core Fusion Topology & 0.0059 & 0.9911 & 0.9828 & 0.9869 & 0.9947 & 0.9879 \\
@@ -186,7 +186,7 @@ To separate the effect of the backbone from the effect of fusion, each single-mo
 
 \begin{table}[H]
 \centering
-\caption{RGB-only scene classification with three backbones (row-level test set, $n=10{,}951$). Params counts the full unimodal model, including both classifier heads. Epochs shows epochs run / epoch budget. Best value per column in bold.}
+\caption[RGB-only scene classification]{RGB-only scene classification with three backbones ($n=10{,}951$). Epochs: run / budget. Best in bold.}
 \label{tab:unimodal_rgb}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccccccc@{}}
@@ -203,7 +203,7 @@ A1c & MobileViT-XXS & \textbf{1.12M} & 12 / 12 & 0.0105 & 0.9882 & \textbf{0.991
 
 \begin{table}[H]
 \centering
-\caption{Pseudo-thermal-only scene classification with three backbones (1-channel input; row-level test set). The input is derived from RGB, not measured LWIR. A2 stopped early at epoch 36 of 50.}
+\caption[Pseudo-thermal-only scene classification]{Pseudo-thermal-only scene classification (1-channel, derived from RGB). A2 stopped early at epoch 36 of 50.}
 \label{tab:unimodal_thermal}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccccccc@{}}
@@ -220,7 +220,7 @@ A2c & MobileViT-XXS (1-ch) & \textbf{1.12M} & 12 / 12 & 0.0117 & 0.9905 & 0.9788
 
 \begin{table}[H]
 \centering
-\caption{Audio-only scene classification with three backbones (log-mel input from label-matched ESC-50 clips; row-level test set, all 10{,}951 rows, of which 47.2\% have no audio and receive an all-zero input). A3b and A3c stopped early (budget 40 epochs) and produced identical test metrics; see text. They are degenerate solutions, not evidence that the backbone improves audio recognition.}
+\caption[Audio-only scene classification]{Audio-only scene classification (label-matched ESC-50 log-mel; 47.2\% of test rows have no audio). A3b and A3c stopped early with identical, degenerate results.}
 \label{tab:unimodal_audio}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccccccc@{}}
@@ -244,7 +244,7 @@ A3c & AudioCNN + GDBlock & \textbf{0.07M} & 25 / 40 & 0.2625 & 0.4153 & 0.5777 &
 
 \begin{table}[H]
 \centering
-\caption{Accuracy against cost for the trained visual backbones (combined F1, \%, row-level test set). Cost columns are from Table~\ref{tab:backbone_candidates}. The fused columns give AdapFuse-v1 with that backbone in the named stream; the base AdapFuse-v1 (98.74\%) uses MobileNetV3-Small for RGB and ResNet-18 for pseudo-thermal. $^\dagger$Lower bound. -- = not trained.}
+\caption[Accuracy vs.\ cost of visual backbones]{Combined F1 (\%) vs.\ cost of the visual backbones (cost from Table~\ref{tab:backbone_candidates}). Fused: AdapFuse-v1 with that backbone. $^\dagger$Lower bound. -- = not trained.}
 \label{tab:backbone_accuracy_cost}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lcccccc@{}}
@@ -273,7 +273,7 @@ The row-level scores above cannot be compared with published work, because our c
 
 \begin{table}[H]
 \centering
-\caption{AIDER results. Panel (a) uses the 4:1:2 protocol of Lee et al.\ (2{,}473 test images, five classes), which we follow; its published rows are copied from Lee et al.~\cite{lee2023wattefnet}, who trained every model from scratch for 300 epochs and do not state the F1 averaging. Panel (b) lists published results under the earlier protocol of Kyrkou and Theocharides (about 70/30 per class, 2{,}123 test images, weighted F1), which uses different test images and is shown for reference only. Our rows use ImageNet-pretrained encoders; F1 is macro-averaged and weighted F1 is given in brackets. Params counts the full model.}
+\caption[AIDER results]{AIDER results. (a) 4:1:2 protocol of Lee et al.~\cite{lee2023wattefnet} (2{,}473 test images), which we follow. (b) Earlier protocol with a different test set, for reference only. Our F1 is macro-averaged (weighted F1 in brackets).}
 \label{tab:public_aider}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llccc@{}}
@@ -304,7 +304,7 @@ All three of our models exceed the published F1 scores under the protocol we fol
 
 \begin{table}[H]
 \centering
-\caption{Per-class results on the AIDER 4:1:2 test set, recomputed by re-running the saved checkpoints (they reproduce the aggregate scores in Table~\ref{tab:public_aider}). P, R and F1 in \%; $n$ is the number of test images.}
+\caption[Per-class AIDER results]{Per-class results on the AIDER 4:1:2 test set (P, R, F1 in \%; $n$: test images).}
 \label{tab:public_aider_perclass}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lrccccc@{}}
@@ -331,7 +331,7 @@ Table~\ref{tab:public_aider_perclass} shows where the errors lie. Normal, fire a
 
 \begin{table}[H]
 \centering
-\caption{FLAME fire/no-fire classification, official protocol (8{,}617 test frames, 5{,}137 fire and 3{,}480 no-fire, from a different drone and camera than training). Validation F1 is on the held-out 20\% of the training folder (same drone). Fire recall is the share of fire frames detected (sensitivity); no-fire recall is the share of clean frames correctly rejected (specificity). Our F1 is macro-averaged; published F1 averaging is as stated in each paper. The Zhang/Wang (2022) row is as reported by Deng et al.~\cite{deng2025lightweight}. -- = not reported or not applicable.}
+\caption[FLAME fire/no-fire classification]{FLAME fire/no-fire results, official protocol (8{,}617 test frames from a different drone than training). Fire recall: sensitivity; no-fire recall: specificity. Zhang/Wang (2022) as reported by Deng et al.~\cite{deng2025lightweight}. -- = not reported.}
 \label{tab:public_flame}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccccc@{}}
@@ -362,9 +362,9 @@ Table~\ref{tab:adaptfuse_extended} reports extended metrics for AdapFuse-v1, inc
 
 \begin{table}[H]
 \centering
-\caption{AdapFuse-v1 Extended Evaluation Metrics ($n=10{,}951$ test samples)}
+\caption[AdapFuse-v1 extended evaluation metrics]{AdapFuse-v1 extended evaluation metrics ($n=10{,}951$)}
 \label{tab:adaptfuse_extended}
-\begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{6.0cm}@{}}
+\begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{5.2cm}@{}}
 \toprule
 \textbf{Metric} & \textbf{Value} & \textbf{Operational Significance} \\
 \midrule
@@ -389,11 +389,11 @@ Inference Latency (batch=1) & 14.32 ms & 69.9 FPS on workstation RTX 5090 \\
 \end{tabular}
 
 \vspace{1mm}
-\parbox{0.95\textwidth}{\footnotesize $^\dagger$Means over all 10{,}951 test rows. The model sets a gate to zero whenever its modality is missing, and the averaging script (\texttt{reliability\_analysis.py}) includes those rows. 0.972 equals the fraction of test rows that have RGB and pseudo-thermal inputs (10{,}646/10{,}951 = 0.9721), so both image gates sit at $\approx$1.0 on every row that has the input. The audio mean of 0.006 over all rows corresponds to $\approx$0.011 over the 5{,}781 rows that have an audio clip.}
+\parbox{0.95\textwidth}{\footnotesize $^\dagger$Means over all 10{,}951 test rows. The model sets a gate to zero whenever its modality is missing, and the averaging script (reliability\_analysis.py) includes those rows. 0.972 equals the fraction of test rows that have RGB and pseudo-thermal inputs (10{,}646/10{,}951 = 0.9721), so both image gates sit at $\approx$1.0 on every row that has the input. The audio mean of 0.006 over all rows corresponds to $\approx$0.011 over the 5{,}781 rows that have an audio clip.}
 \end{table}
 
 \textbf{Observed row-level false-positive rate (0.73\%):}
-Our evaluation reports a 0.73\% false-positive rate for scene classification on the row-level test split. This is not an operational field false-alarm study and cannot be causally attributed to the NuisanceAwareHead, because our trainer passes \texttt{nuisance\_gt=None} and its nuisance loss is zero.
+Our evaluation reports a 0.73\% false-positive rate for scene classification on the row-level test split. This is not an operational field false-alarm study and cannot be causally attributed to the NuisanceAwareHead, because our trainer passes nuisance\_gt=None and its nuisance loss is zero.
 
 \textbf{Learned modality gates:}
 The reported averages (audio 0.006, image streams 0.972) include rows whose gate is forced to zero because the modality is missing. Restricted to rows that have each input, the row-level model's RGB and pseudo-thermal gates are saturated at $\approx$1.0 and its audio gate is $\approx$0.011; the RUE is therefore effectively passing both image streams through unchanged and switching audio off. In this run the learned representation largely ignores the label-matched ESC-50 channel. The audio carries no information about the specific scene, but it does carry the fire/clean label on rows that have it (Section~\ref{sec:dataset_sources}), so ignoring it is only one of two solutions the data allow; with RGB already near ceiling on this split, the model had little to gain from the shortcut. The low audio gate is therefore a consequence of the data construction and of this training run, not evidence of learned reliability estimation. It is also not a stable property of the architecture: the grouped-split retraining (Section~\ref{sec:grouped_gates}) converges to the opposite audio gate. Likewise, the RGB and pseudo-thermal gates remain essentially constant across all tested corruption severities (Section~\ref{sec:robustness_stress_test}). In our model, the RUE behaves as a learned, largely input-independent feature weighting rather than as a dynamic reliability estimator; corruption-sensitive gating would require training with explicit degradation targets and evaluating gate response against measured degradation, neither of which is present here.
@@ -404,8 +404,9 @@ Table~\ref{tab:latency_profile} breaks down the 14.32\,ms total inference latenc
 
 \begin{table}[H]
 \centering
-\caption{Per-Module Inference Latency Breakdown for AdapFuse-v1 (batch=1, Workstation GPU)}
+\caption[Per-module inference latency of AdapFuse-v1]{Per-module inference latency of AdapFuse-v1 (batch 1, workstation GPU)}
 \label{tab:latency_profile}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lrr@{}}
 \toprule
 \textbf{Module} & \textbf{Latency (ms)} & \textbf{\% of Total Pipeline} \\
@@ -423,7 +424,8 @@ Unattributed (end-to-end minus module sum) & 0.07 & 0.5\% \\
 \midrule
 \textbf{Total Inference Pipeline (end-to-end)} & \textbf{14.32} & \textbf{100.0\%} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 The feature extractors (RGB, pseudo-thermal, and audio backbones) account for 83.8\% of the measured execution time. The RUE, attention, GRU, and nuisance branch together add 1.63\,ms, with gate computation requiring 0.85\,ms (5.9\%). At batch size 1 on a large GPU, latency is dominated by the number of sequential kernel launches rather than by arithmetic, which is why MobileNetV3-Small (0.06\,GMACs, many small layers) takes longer than ResNet-18 (1.81\,GMACs) and why a small MLP such as the RUE costs 0.85\,ms; these timings therefore do not transfer to an embedded accelerator. A separate end-to-end measurement in our evaluation script gave 12.10\,ms, so run-to-run variation is of the order of 2\,ms. This profiles implementation overhead on the workstation GPU; it does not establish that the learned gates respond dynamically to degradation.
@@ -437,7 +439,7 @@ Every result reported so far uses the row-level stratified split described in Se
 
 \textbf{Grouped split construction.} The 72{,}997 rows were repartitioned into 50{,}845 training, 11{,}055 validation, and 11{,}097 test rows under a capture-group constraint, yielding 9{,}267 / 2{,}003 / 2{,}002 disjoint capture groups. FLAME does not expose true video or flight identifiers in its released files, so its frames are blocked in contiguous runs of 250 as an explicit adjacent-frame proxy; C2A augmentations and SARD Roboflow variants are grouped by original-image identity; ESC-50 folds 1--3, 4 and 5 are assigned to train, validation and test respectively, and visual rows are re-paired only with clips from their own partition. The generated split contains zero capture-group overlap and zero ESC-50 path overlap across the three partitions.
 
-\textbf{Training recipe differences.} The grouped retraining was not a like-for-like repeat of the row-level run. Our run configuration (\texttt{resolved\_config.yaml}) shows that it was trained with batch size 2 instead of 16, and with class balancing disabled (\texttt{use\_balanced: false}), i.e.\ on the 50{,}845 unbalanced grouped training rows (46.7\% fire/smoke, 4.0\% other hazard) rather than on a Stratified Balanced Subset. Optimiser, learning-rate schedule, epochs, early stopping and missing-modality dropout were unchanged. Consequently, the difference between the two columns of Table~\ref{tab:grouped_comparison} combines three effects (the split, the class balance of the training data, and the batch size), and the present runs cannot separate them. A controlled comparison requires retraining on the grouped split with the row-level recipe (balanced subset, batch size 16), or retraining on the row-level split with the grouped recipe.
+\textbf{Training recipe differences.} The grouped retraining was not a like-for-like repeat of the row-level run. Our run configuration (resolved\_config.yaml) shows that it was trained with batch size 2 instead of 16, and with class balancing disabled (use\_balanced: false), i.e.\ on the 50{,}845 unbalanced grouped training rows (46.7\% fire/smoke, 4.0\% other hazard) rather than on a Stratified Balanced Subset. Optimiser, learning-rate schedule, epochs, early stopping and missing-modality dropout were unchanged. Consequently, the difference between the two columns of Table~\ref{tab:grouped_comparison} combines three effects (the split, the class balance of the training data, and the batch size), and the present runs cannot separate them. A controlled comparison requires retraining on the grouped split with the row-level recipe (balanced subset, batch size 16), or retraining on the row-level split with the grouped recipe.
 
 \subsection{Aggregate Effect of the Grouped Retraining}
 
@@ -445,7 +447,7 @@ Table~\ref{tab:grouped_comparison} compares AdapFuse-v1 under the two split regi
 
 \begin{table}[H]
 \centering
-\caption{AdapFuse-v1 under row-level versus capture-group-aware splitting. Both columns use the same architecture, but the training recipe also differs (batch size 16 vs.\ 2; Stratified Balanced Subset vs.\ unbalanced grouped training rows; see text), so $\Delta$ is not attributable to the split alone. The grouped column is a single completed training seed (see the note below the table). AdapFuse-v1 is a classification-only model, so detection $\mathrm{mAP}_{50}$ does not apply to either column.}
+\caption[Row-level vs.\ capture-group-aware split]{AdapFuse-v1 under row-level vs.\ capture-group-aware splits. The training recipe also differs, so $\Delta$ is not due to the split alone. Grouped column: single seed.}
 \label{tab:grouped_comparison}
 \begin{tabular}{@{}lccr@{}}
 \toprule
@@ -473,7 +475,7 @@ The row-level figures reported elsewhere in this chapter should still be read as
 \subsection{Learned Gates in the Grouped Retraining}
 \label{sec:grouped_gates}
 
-The grouped run's saved per-row predictions (\texttt{test\_predictions.csv}) also record the three RUE gates, and they differ sharply from the row-level model. Joining them with the modality-presence flags of the grouped test metadata gives the following picture. Gates for missing modalities are exactly zero in both runs, as the model's presence mask requires.
+The grouped run's saved per-row predictions (test\_predictions.csv) also record the three RUE gates, and they differ sharply from the row-level model. Joining them with the modality-presence flags of the grouped test metadata gives the following picture. Gates for missing modalities are exactly zero in both runs, as the model's presence mask requires.
 \begin{itemize}
     \item \textbf{Audio:} the gate is 1.000 on all 5{,}982 test rows that have an audio clip, whereas the row-level model's audio gate is $\approx$0.011 on rows with audio. The two runs therefore learned opposite treatments of the same label-matched channel. Because the audio clip class encodes the fire/clean label in the grouped split as well (every fire/smoke row with audio has a ``crackling fire'' clip, every clean row does not), the open audio gate is consistent with the grouped model exploiting that shortcut.
     \item \textbf{Pseudo-thermal:} on the 10{,}697 rows that have a pseudo-thermal map, the gate is bimodal (above 0.99 on 53.8\% of rows and below 0.01 on 43.5\%) and is switched off on 59.7\% of FLAME rows but only 1.4\% of C2A rows. In the excluded seed~41 run the pseudo-thermal gate is zero on every row.
@@ -488,7 +490,7 @@ Table~\ref{tab:grouped_per_source} decomposes the same grouped-split predictions
 
 \begin{table}[H]
 \centering
-\caption{Grouped-split test performance decomposed by source dataset (AdapFuse-v1, seed~42, $n=11{,}097$), recomputed from our \texttt{test\_predictions.csv}. ``Saved F1'' is the value written by the evaluation script, which averages over \emph{all} four disaster and both victim classes with \texttt{zero\_division=0}; classes that do not occur in a source therefore contribute an F1 of zero and cap the score (e.g.\ at 0.50 for a single-class victim source). ``Present-class F1'' averages only over classes that occur in that source. Victim-presence classes: 0 = no person visible, 1 = person visible.}
+\caption[Grouped-split results by source dataset]{Grouped-split results by source dataset (AdapFuse-v1, $n=11{,}097$). Saved F1 averages over all classes, so classes absent from a source score zero; Present-class F1 averages only the classes present.}
 \label{tab:grouped_per_source}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lrllcccccc@{}}
@@ -526,7 +528,7 @@ Figure~\ref{fig:robustness_stress} plots the resulting macro-F1 and gate traject
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_05_robustness.png}
-\caption{Robustness evidence reconstructed from saved JSON logs. (A) AdapFuse-v1 disaster macro-F1 under five synthetic corruption sweeps; severe smoke reduces macro-F1 to 0.897. (B) The recorded gate associated with each corrupted input; the RGB (dashed) and pseudo-thermal curves coincide. RGB and pseudo-thermal gate means remain at 0.972 and the audio mean near 0.006 across severity; because these means include missing-modality rows (gate 0), the image gates stay saturated at $\approx$1.0 on every row with input. Hence robustness should be attributed to representation redundancy rather than demonstrated dynamic reweighting. The former hypothetical fixed-fusion trajectory has been removed.}
+\caption[Robustness under synthetic corruptions]{(A) AdapFuse-v1 disaster macro-F1 under five synthetic corruptions; severe smoke gives 0.897. (B) Mean modality gates: RGB and pseudo-thermal stay near 1 and audio near 0, so robustness comes from redundancy, not dynamic reweighting.}
 \label{fig:robustness_stress}
 \end{figure}
 
@@ -535,7 +537,7 @@ Figure~\ref{fig:robustness_qualitative} grounds the aggregate sweep in one real 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_12_robustness_qualitative.png}
-\caption{Checkpoint forward-pass outputs on one real FLAME RGB test frame (\texttt{flame\_012650}) under clean input, synthetic smoke overlay, and simulated RGB dropout. Text under each image gives the predicted class and confidence. The prediction is retained in this example. The inset is an RGB-derived pseudo-thermal map, not sensor IR. The RGB gate does not decline under smoke, so this example does not demonstrate corruption-sensitive reliability estimation.}
+\caption[Predictions on one FLAME frame under corruption]{AdapFuse-v1 on one FLAME test frame: clean, synthetic smoke and RGB dropout. The prediction holds, but the RGB gate does not drop under smoke.}
 \label{fig:robustness_qualitative}
 \end{figure}
 
@@ -550,11 +552,11 @@ Figure~\ref{fig:robustness_qualitative} grounds the aggregate sweep in one real 
 \section{Component-Wise Ablation Study of the AdapFuse-v1 Architecture}
 \label{sec:component_ablations}
 
-Five single-component variants were trained on the same row-level split and evaluated on the held-out test set ($n=10{,}951$). Table~\ref{tab:ablation_results} reports their descriptive differences from our base run. Because the repository does not contain repeated seeds or confidence intervals, these comparisons indicate associations rather than causal component effects. Two further facts limit them. First, the base run's logged learning rate cycles with a period of about eight epochs, whereas all five variants follow the configured single cosine decay (Table~\ref{tab:training}), so each comparison also changes the schedule. Second, removing the nuisance head changes no training signal, because its loss is already zero in the base run; \texttt{ablation\_no\_nuisance} is therefore effectively a re-run of the base model, and its 4.6$\times$ higher test loss with a $-0.02$\,pp change in combined F1 indicates the scale of run-to-run variation. Differences of a few tenths of a point, and loss ratios of 4--5$\times$, are within what this comparison can produce without any component effect.
+Five single-component variants were trained on the same row-level split and evaluated on the held-out test set ($n=10{,}951$). Table~\ref{tab:ablation_results} reports their descriptive differences from our base run. Because the repository does not contain repeated seeds or confidence intervals, these comparisons indicate associations rather than causal component effects. Two further facts limit them. First, the base run's logged learning rate cycles with a period of about eight epochs, whereas all five variants follow the configured single cosine decay (Table~\ref{tab:training}), so each comparison also changes the schedule. Second, removing the nuisance head changes no training signal, because its loss is already zero in the base run; ablation\_no\_nuisance is therefore effectively a re-run of the base model, and its 4.6$\times$ higher test loss with a $-0.02$\,pp change in combined F1 indicates the scale of run-to-run variation. Differences of a few tenths of a point, and loss ratios of 4--5$\times$, are within what this comparison can produce without any component effect.
 
 \begin{table}[H]
 \centering
-\caption{Component-wise AdapFuse-v1 variants on the row-level test split ($n=10{,}951$). Rows are separate saved training runs; no repeated seeds or confidence intervals are available.}
+\caption[Component ablations of AdapFuse-v1]{Component ablations of AdapFuse-v1 ($n=10{,}951$). Single runs; no repeated seeds or confidence intervals.}
 \label{tab:ablation_results}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccccc@{}}
@@ -562,11 +564,11 @@ Five single-component variants were trained on the same row-level split and eval
 \textbf{Model Variant} & \textbf{Component Removed} & \textbf{Test Loss} & \textbf{Dis.\ F1} & \textbf{Vic.\ F1} & \textbf{Comb.\ F1} & \textbf{$\Delta$ Comb.\ F1} & \textbf{Loss Multiple} \\
 \midrule
 \textbf{AdapFuse-v1 (Base Teacher)} & \textbf{None (Full Architecture)} & \textbf{0.0020} & \textbf{0.9913} & \textbf{0.9836} & \textbf{0.9874} & \textbf{n/a} & \textbf{1.0$\times$} \\
-\texttt{ablation\_no\_gru} & Single-step GRU Refinement & 0.0102 & 0.9863 & 0.9765 & 0.9814 & \textbf{$-$0.60 pp} & 5.1$\times$ \\
-\texttt{ablation\_no\_attention} & Cross-Modal Attention & 0.0076 & 0.9894 & 0.9785 & 0.9839 & \textbf{$-$0.35 pp} & 3.8$\times$ \\
-\texttt{ablation\_no\_quality\_tokens} & Quality Token Heads & 0.0108 & 0.9881 & 0.9800 & 0.9840 & \textbf{$-$0.34 pp} & 5.4$\times$ \\
-\texttt{ablation\_no\_nuisance} & NuisanceAwareHead & 0.0092 & 0.9923 & 0.9821 & 0.9872 & \textbf{$-$0.02 pp} & 4.6$\times$ \\
-\texttt{ablation\_no\_rue} & RUE Reliability Gating & 0.0094 & 0.9938 & 0.9812 & 0.9875 & $+$0.01 pp$^*$ & 4.7$\times$ \\
+ablation\_no\_gru & Single-step GRU Refinement & 0.0102 & 0.9863 & 0.9765 & 0.9814 & \textbf{$-$0.60 pp} & 5.1$\times$ \\
+ablation\_no\_attention & Cross-Modal Attention & 0.0076 & 0.9894 & 0.9785 & 0.9839 & \textbf{$-$0.35 pp} & 3.8$\times$ \\
+ablation\_no\_quality\_tokens & Quality Token Heads & 0.0108 & 0.9881 & 0.9800 & 0.9840 & \textbf{$-$0.34 pp} & 5.4$\times$ \\
+ablation\_no\_nuisance & NuisanceAwareHead & 0.0092 & 0.9923 & 0.9821 & 0.9872 & \textbf{$-$0.02 pp} & 4.6$\times$ \\
+ablation\_no\_rue & RUE Reliability Gating & 0.0094 & 0.9938 & 0.9812 & 0.9875 & $+$0.01 pp$^*$ & 4.7$\times$ \\
 \bottomrule
 \end{tabular}%
 }
@@ -574,16 +576,16 @@ Five single-component variants were trained on the same row-level split and eval
 \end{table}
 
 \textbf{1. Single-Step GRU Refinement Changes the Learned Representation.}
-Removing the GRU block (\texttt{ablation\_no\_gru}) corresponds to the largest difference in this suite: Combined F1 is 0.60 percentage points lower and victim-presence F1 is 0.71 points lower, while test loss is 5.1$\times$ higher. However, the implementation invokes the GRU with sequence length one (\texttt{fused.unsqueeze(1)}) and no carried-over hidden state, so each sample starts from a zero state and no information passes between frames. It therefore acts as a gated nonlinear refinement layer in these experiments; the result is not evidence of temporal smoothing, vibration invariance, or robustness across successive frames.
+Removing the GRU block (ablation\_no\_gru) corresponds to the largest difference in this suite: Combined F1 is 0.60 percentage points lower and victim-presence F1 is 0.71 points lower, while test loss is 5.1$\times$ higher. However, the implementation invokes the GRU with sequence length one (fused.unsqueeze(1)) and no carried-over hidden state, so each sample starts from a zero state and no information passes between frames. It therefore acts as a gated nonlinear refinement layer in these experiments; the result is not evidence of temporal smoothing, vibration invariance, or robustness across successive frames.
 
 \textbf{2. The Attention Run Scores Slightly Above the Mean-Pooling Run.}
-Replacing the 4-head attention block with token mean pooling (\texttt{ablation\_no\_attention}) corresponds to 0.35 percentage points lower combined F1 and 0.51 points lower victim-presence F1, with a 3.8$\times$ higher loss. The attention operates over three globally pooled modality tokens, not localized spatial patches. Moreover, the pseudo-thermal token is derived from the RGB image, so this experiment supports learned modality-level interaction but not independent RGB--thermal spatial correspondence.
+Replacing the 4-head attention block with token mean pooling (ablation\_no\_attention) corresponds to 0.35 percentage points lower combined F1 and 0.51 points lower victim-presence F1, with a 3.8$\times$ higher loss. The attention operates over three globally pooled modality tokens, not localized spatial patches. Moreover, the pseudo-thermal token is derived from the RGB image, so this experiment supports learned modality-level interaction but not independent RGB--thermal spatial correspondence.
 
 \textbf{3. Learned Quality Features Are Associated with Lower Test Loss.}
-Removing the dedicated 16-dimensional quality heads (\texttt{ablation\_no\_quality\_tokens}) corresponds to a 0.34-point lower combined F1 and a test loss of 0.0108 (5.4$\times$ the base run). This shows that the learned quality features are useful within the fitted architecture, but it does not establish calibrated uncertainty or detection of physical sensor degradation because no degradation targets are supplied during training.
+Removing the dedicated 16-dimensional quality heads (ablation\_no\_quality\_tokens) corresponds to a 0.34-point lower combined F1 and a test loss of 0.0108 (5.4$\times$ the base run). This shows that the learned quality features are useful within the fitted architecture, but it does not establish calibrated uncertainty or detection of physical sensor degradation because no degradation targets are supplied during training.
 
 \textbf{4. The Nuisance Variant Does Not Establish Nuisance Supervision.}
-The no-nuisance run has a 4.6$\times$ higher loss but nearly unchanged combined F1. In our trainer, \texttt{nuisance\_gt=None}, so the base model's nuisance loss is also zero and the two runs differ only in the (unused) head, the random initialisation and the learning-rate schedule. The difference between these saved runs cannot therefore be interpreted as evidence that an auxiliary nuisance objective regularizes false-alarm features; it is better read as a measure of run-to-run noise, and repeated controlled runs with nuisance labels are required.
+The no-nuisance run has a 4.6$\times$ higher loss but nearly unchanged combined F1. In our trainer, nuisance\_gt=None, so the base model's nuisance loss is also zero and the two runs differ only in the (unused) head, the random initialisation and the learning-rate schedule. The difference between these saved runs cannot therefore be interpreted as evidence that an auxiliary nuisance objective regularizes false-alarm features; it is better read as a measure of run-to-run noise, and repeated controlled runs with nuisance labels are required.
 
 \section{Backbone Exploration and Architectural Augmentations}
 \label{sec:backbone_variants}
@@ -604,17 +606,17 @@ Experiments comparing acoustic encoders (Table~\ref{tab:main_results}, Ranks 10,
 Evaluating two-channel subsets shows that \textbf{RGB + pseudo-thermal} reaches \textbf{98.50\% Combined F1} and \textbf{pseudo-thermal + audio} reaches \textbf{98.05\%}. These are metadata-channel ablations rather than hardware payload experiments. In particular, pseudo-thermal is computed from visible RGB, so the latter result does not establish a fallback for zero-visibility night or heavy-smoke operation: when the RGB frame is dark or occluded, the pseudo-thermal map derived from it is degraded in the same way. Likewise, the RGB + pseudo-thermal result combines two views of the same sensor and does not test fusion of independent sensors. A fallback evaluation requires independent LWIR hardware.
 
 \subsection{Spatial Attention and Domain Prompt Tokens}
-The \textbf{Spatial Attention} augmentation (\texttt{adaptfuse\_v1\_spatial\_attn}, 98.44\% F1) and \textbf{Domain Prompt Tokens} (\texttt{adaptfuse\_v1\_domain\_prompts}, 98.49\% F1) show that both modules can be added to the architecture with little change in row-level performance ($-0.30$ and $-0.25$ combined-F1 points relative to the 98.74\% base). Both are evaluated on the same row-level split as the base model, and the domain prompts are not supervised with condition labels; these results therefore show only that the modules do not degrade within-collection performance, not that they improve behaviour in specific flight regimes. Testing that claim would require held-out data from different altitudes, illumination, weather or sensor payloads.
+The \textbf{Spatial Attention} augmentation (adaptfuse\_v1\_spatial\_attn, 98.44\% F1) and \textbf{Domain Prompt Tokens} (adaptfuse\_v1\_domain\_prompts, 98.49\% F1) show that both modules can be added to the architecture with little change in row-level performance ($-0.30$ and $-0.25$ combined-F1 points relative to the 98.74\% base). Both are evaluated on the same row-level split as the base model, and the domain prompts are not supervised with condition labels; these results therefore show only that the modules do not degrade within-collection performance, not that they improve behaviour in specific flight regimes. Testing that claim would require held-out data from different altitudes, illumination, weather or sensor payloads.
 
 \section{Error Analysis}
 \label{sec:failure_gallery}
 
-The near-ceiling aggregate metrics reported in Table~\ref{tab:main_results} can obscure specific failure modes. Figure~\ref{fig:failure_gallery} surfaces genuine misclassifications discovered by re-running trained checkpoints across the natural test set.
+The near-ceiling aggregate metrics reported in Table~\ref{tab:main_results} can obscure specific failure modes. Figure~\ref{fig:failure_gallery} surfaces genuine misclassifications discovered by re-running trained checkpoints across the natural test set. AdapFuse-v1 errors are rare (8 found across 1{,}280 sampled test rows, consistent with its 99.44\% disaster accuracy) and concentrate on visually ambiguous clean-vs-collapse scenes, such as dense urban clutter mistaken for collapse debris. The audio-only baseline (A3, 38.2\% disaster F1) fails far more often (121 errors in a smaller sample) and defaults to Fire/Smoke, the expected output for rows without audio, which receive an all-zero input; this reflects missing and label-matched audio (Section~\ref{sec:unimodal_backbones}), not the acoustic quality of the clips.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_13_failure_gallery.png}
-\caption{Real misclassifications from re-running trained checkpoints on the natural-distribution test set. Panel titles give true $\rightarrow$ predicted class (confidence). Top row: AdapFuse-v1 errors are rare (8 found across 1{,}280 sampled test rows, consistent with its 99.44\% disaster accuracy) and concentrate on visually ambiguous clean-vs-collapse scenes (e.g.\ dense urban/structural clutter mistaken for collapse debris). Bottom row: the audio-only baseline (A3, 38.2\% disaster F1) fails much more frequently (121 errors in a smaller sample) and defaults to a Fire/Smoke prediction. This is the expected output on rows without audio, which receive an all-zero input; it reflects missing and label-matched audio (Section~\ref{sec:unimodal_backbones}), not the acoustic quality of the clips.}
+\caption[Real misclassifications]{Real misclassifications (true $\rightarrow$ predicted, confidence). Top: rare AdapFuse-v1 errors on ambiguous clean-vs-collapse scenes. Bottom: the audio-only baseline mostly predicts Fire/Smoke, its default output for rows without audio.}
 \label{fig:failure_gallery}
 \end{figure}
 
@@ -627,7 +629,7 @@ The near-ceiling aggregate metrics reported in Table~\ref{tab:main_results} can 
     \item \textbf{Fusion versus RGB-only:} On the row-level split, AdapFuse-v1 (98.74\% combined F1) does not exceed the RGB-only baseline (98.85\%), and the no-RUE variant (98.75\%) matches it; the fused inputs are RGB-derived or label-matched, so no fusion accuracy gain is shown.
     \item \textbf{Unimodal Backbones:} With three backbones per modality, the best RGB-only model (MobileViT-XXS, 98.99\%) matches the best-but-one fused model, and the best pseudo-thermal-only model (EfficientNet-B0, 98.60\%) improves on ResNet-18 by 1.17 points. With the backbone held fixed, fusion adds 0.00--0.36 points. The CNN6-style and GDBlock audio-only runs collapse to identical degenerate predictions.
     \item \textbf{Audio Label Leak:} On every row that has audio, the ESC-50 clip class identifies fire/smoke versus clean, and only these two classes have audio. The low audio-only macro-F1 reflects missing audio and absent classes, not uninformative audio, and any fused model can use the clip as a label shortcut.
-    \item \textbf{Public Benchmarks:} Under the published AIDER 4:1:2 protocol, RGB-only EfficientNet-B0 reaches 94.00\% macro-F1 against 88.5\% for WATT-EffNet (trained from scratch), the best published result on that split. Under the official cross-camera FLAME protocol it reaches 83.72\% accuracy, above the original Xception (76.23\%) but below three later methods (85.12--88.05\%), with no-fire recall (75.8\%) as the main weakness; in-domain validation F1 is 99.9\% for every model. On our 70/20/10 D-Fire split (2{,}153 test images) our best detector (77.10\% mAP$_{50}$) is below re-evaluated YOLOv5l, YOLOv7x and YOLOv8 results (77.80--80.40\%), mainly on fire AP. AdapFuse-v1 is below RGB-only EfficientNet-B0 on AIDER and FLAME. None of these results is state of the art.
+    \item \textbf{Public Benchmarks:} Under the published AIDER 4:1:2 protocol, RGB-only EfficientNet-B0 reaches 94.00\% macro-F1 against 88.5\% for WATT-EffNet (trained from scratch), the best published result on that split. Under the official cross-camera FLAME protocol it reaches 83.72\% accuracy, above the original Xception (76.23\%) but below three later methods (85.12--88.05\%), with no-fire recall (75.8\%) as the main weakness; in-domain validation F1 is 99.9\% for every model. On our 70/20/10 D-Fire split (2{,}153 test images) our best detector (77.10\% mAP$_{50}$) is below the published YOLOv5l, YOLOv7x and YOLOv8 results (77.80--80.40\%, each reported on its own test set), mainly on fire AP. AdapFuse-v1 is below RGB-only EfficientNet-B0 on AIDER and FLAME. None of these results is state of the art.
     \item \textbf{Component Variants:} The base run outperforms the no-GRU, no-attention, and no-quality-feature runs by 0.60, 0.35, and 0.34 F1 points, respectively. These single-run differences are descriptive and of the same order as the run-to-run noise shown by the no-nuisance re-run; the variants also used a different learning-rate schedule from the base run, the GRU receives one step, reliability has no degradation targets, and the nuisance loss is zero.
     \item \textbf{Scene-Level Backbone Results:} EfficientNet-B0 reaches $99.24\%$ Combined F1 and MobileViT-XXS reaches $98.99\%$ on the row-level split. These results concern victim presence, not person localization.
     \item \textbf{Row-Level Error and Workstation Speed:} AdapFuse-v1 reports 0.73\% row-level scene-classification FPR, ECE 0.0337, and 14.32\,ms inference on an RTX 5090 workstation (32\,GB VRAM). Neither operational false-alarm reduction nor embedded-UAV speed has been validated.

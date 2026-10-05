@@ -9,7 +9,7 @@ The proposed methodology follows four phases: (1) multimodal dataset curation fr
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/4.1.png}
-\caption{Evidence-grounded AdapFuse-v1 computational graph. RGB, RGB-derived pseudo-thermal, and optional label-matched audio are encoded and projected to three 192-d tokens. RUE gates modulate the tokens before four-head attention and mean pooling. The GRU is executed with sequence length one in the current loader and therefore acts as a gated refinement block, not temporal memory. Disaster and victim-presence heads are supervised; the dashed nuisance head is defined but receives no nuisance labels in our trainer.}
+\caption[AdapFuse-v1 architecture]{AdapFuse-v1 architecture. \textbf{Inputs:} an RGB frame, its RGB-derived pseudo-thermal map, and a label-matched ESC-50 audio clip as a log-mel spectrogram (absent in about 47\% of rows). \textbf{Modality encoders:} MobileNetV3-Small, ResNet-18 and a small 2D-CNN; each gives a 192-d projected feature token and a 16-d quality token describing input quality. \textbf{RUE} (Reliability and Uncertainty Estimator): an MLP that reads the quality tokens and feature statistics and outputs one sigmoid reliability gate per modality, $r_{\mathrm{rgb}}, r_{\mathrm{th}}, r_{\mathrm{ac}} \in [0,1]$ (set to 0 when that input is missing); each token is multiplied by its gate. \textbf{Fusion:} 4-head attention across the three weighted tokens ($Q=K=V$), a residual connection with LayerNorm, then mean pooling to one 192-d vector. \textbf{GRU refinement:} one GRU cell run for a single step ($N=1$), so it refines the vector but keeps no memory across frames. \textbf{Output heads:} two-layer MLPs for disaster type (4 classes) and victim presence (2 classes), trained with $\mathcal{L}_{\mathrm{disaster}}$ and $\mathcal{L}_{\mathrm{victim}}$; the dashed nuisance head (5 classes) gets no labels, so $\mathcal{L}_{\mathrm{nuisance}}=0$. Solid arrows: data flow; dashed arrows: gate signals.}
 \label{fig:pipeline_overview}
 \end{figure}
 
@@ -22,7 +22,7 @@ Because no single public dataset provides synchronized RGB, thermal, and audio f
 
 \begin{table}[H]
 \centering
-\caption{Dataset Sources and Contribution to the Unified Metadata}
+\caption[Dataset sources and contribution]{Dataset sources and contribution to the unified metadata}
 \label{tab:dataset_sources}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llccp{5cm}@{}}
@@ -45,7 +45,7 @@ FireNet~\cite{jadon2019firenet}          & Wildfire                  & RGB      
 
 \textbf{Label schema:} Each sample carries two independent labels. The \textit{disaster label} takes values 0 (clean), 1 (fire/smoke), 2 (structural collapse or flood), or 3 (other hazard). The \textit{victim label} takes values 0 (no person visible) or 1 (person visible).
 
-\textbf{Modality availability:} Not all sources supply all three inputs. Each row carries three Boolean presence flags (RGB, pseudo-thermal, and audio). Missing inputs are zero-filled and the corresponding flag is cleared. Recomputing the metadata shows 70{,}997 RGB paths and 70{,}997 pseudo-thermal paths, with every thermal path under the RGB-derived \texttt{pseudo\_thermal} tree and no sensor-IR path. Audio is available in 39{,}003 rows but draws from only 2{,}000 unique ESC-50 files, assigned by label rather than capture time. Audio exists only for clean (0) and fire/smoke (1) rows: all 20{,}433 fire/smoke rows with audio share the 40 clips of the ESC-50 ``crackling fire'' class, and all 18{,}570 clean rows with audio draw from the other 1{,}960 clips. The 2{,}000 ESC-50 rows themselves have no image and are the difference between the 72{,}997 rows and the 70{,}997 image paths. In the test set, 10{,}646 of 10{,}951 rows (97.2\%) have RGB and pseudo-thermal, while 5{,}781 (52.8\%) have an assigned audio clip. Nearly half of the test rows are therefore evaluated without any audio input, and every aggregate test score mixes rows with and without audio.
+\textbf{Modality availability:} Not all sources supply all three inputs. Each row carries three Boolean presence flags (RGB, pseudo-thermal, and audio). Missing inputs are zero-filled and the corresponding flag is cleared. Recomputing the metadata shows 70{,}997 RGB paths and 70{,}997 pseudo-thermal paths, with every thermal path under the RGB-derived pseudo\_thermal tree and no sensor-IR path. Audio is available in 39{,}003 rows but draws from only 2{,}000 unique ESC-50 files, assigned by label rather than capture time. Audio exists only for clean (0) and fire/smoke (1) rows: all 20{,}433 fire/smoke rows with audio share the 40 clips of the ESC-50 ``crackling fire'' class, and all 18{,}570 clean rows with audio draw from the other 1{,}960 clips. The 2{,}000 ESC-50 rows themselves have no image and are the difference between the 72{,}997 rows and the 70{,}997 image paths. In the test set, 10{,}646 of 10{,}951 rows (97.2\%) have RGB and pseudo-thermal, while 5{,}781 (52.8\%) have an assigned audio clip. Nearly half of the test rows are therefore evaluated without any audio input, and every aggregate test score mixes rows with and without audio.
 
 \textbf{Consequences of the data construction.} Two properties of our metadata limit what the multimodal experiments can show. First, the pseudo-thermal stream is computed from the RGB frame, not measured by independent LWIR hardware; RGB + pseudo-thermal fusion therefore combines two representations of one sensor, cannot reveal phenomena invisible to RGB (such as heat sources in darkness), and degrades together with RGB. Second, the ESC-50 audio is assigned by shared label rather than recorded with the frame, so the same clip is paired with many unrelated images and carries no scene-specific information. Third, and more serious, it carries the label itself: whether a clip belongs to the ``crackling fire'' class decides fire/smoke versus clean without error on every row that has audio, in both the row-level and the grouped split. Any model given audio can therefore read the fire/clean label from it instead of recognising a hazard. The experiments in Chapter~5 should be read in that light: they evaluate RGB, an RGB-derived map, and label-leaking audio, not synchronized tri-modal sensing.
 
@@ -56,7 +56,7 @@ Figure~\ref{fig:dataset_pipeline} shows four fixed held-out rows, one per disast
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_02_qualitative.png}
-\caption{Four real held-out metadata rows and actual AdapFuse-v1 forward-pass outputs. Each row shows the source RGB image, its RGB-derived pseudo-thermal map, explicit absence of audio, predicted disaster and victim-presence classes, and reported modality gates. The model correctly classifies these four examples; the missing audio gate is forced to zero by the presence mask, while the two available image-derived streams saturate near one. All four rows are fixed entries of \texttt{test.csv} evaluated with a strict load of \texttt{adaptfuse\_v1\_best.pth}; none has an assigned audio clip, so the audio input is zero-filled and its presence flag is 0. These examples demonstrate missing-input execution, not synchronized tri-modal fusion.}
+\caption[AdapFuse-v1 outputs on four held-out test rows]{AdapFuse-v1 outputs on four held-out test rows: RGB image, pseudo-thermal map, predicted classes and modality gates. None of these rows has audio, so the audio gate is 0; the two image gates are near 1. All four are classified correctly.}
 \label{fig:dataset_pipeline}
 \end{figure}
 
@@ -85,7 +85,7 @@ Table~\ref{tab:balancing} summarises the transformation from raw to final traini
 
 \begin{table}[H]
 \centering
-\caption{Dataset split transformation: raw $\to$ Stratified Balanced Subset (training and validation only; test set unchanged).}
+\caption[Raw split vs.\ Stratified Balanced Subset]{Split sizes before and after balancing (training and validation only; test set unchanged).}
 \label{tab:balancing}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lrrrrrr@{}}
@@ -116,7 +116,7 @@ Figure~\ref{fig:dataset_composition} shows the source and label distributions fo
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_08_dataset.png}
-\caption{Dataset composition: 72{,}997 samples from six public sources (left), and test-set label distributions for disaster class (centre) and victim-presence classification (right). FLAME dominates at 65.7\% of all samples; the dataset is majority fire/smoke (46.5\% of test samples; other hazard 4.0\%) with 22.5\% victim-visible samples.}
+\caption[Dataset composition]{Dataset composition: 72{,}997 samples from six sources (left) and test-set label distributions for disaster class (centre) and victim presence (right). FLAME supplies 65.7\% of all samples.}
 \label{fig:dataset_composition}
 \end{figure}
 
@@ -125,7 +125,7 @@ Figure~\ref{fig:balanced_training} visualises all four aspects of this transform
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/fig_10_balanced_training.png}
-\caption{Stratified Balanced Training Subset used across our trained multimodal models (49{,}276 samples: 12{,}319 per disaster class, 50/50 victim balance, 48.1\% synthetic rows). (A) Disaster class distribution: the raw training split is severely imbalanced (fire/smoke 46.5\%, other hazard 4.0\%); the stratified balanced subset achieves exact 25\% per class via two-stage oversampling. (B) Victim balance: raw 21.7\% victim-present corrected to 50/50. (C) Source composition in the 49{,}276-sample stratified balanced subset (solid: original rows, hatched: synthetic, as in D); all six sources are preserved. (D) Original vs synthetic (oversampled) rows per class: minority classes (collapse +2.8$\times$, other +6.0$\times$) are oversampled while majority classes (normal 0.59$\times$, fire 0.52$\times$) are effectively downsampled relative to the raw count; blue values indicate downsampling, red indicate oversampling, and percentages give the synthetic share of each class. All synthetic rows are marked as synthetic duplicates for stronger training augmentation.}
+\caption[Stratified Balanced Training Subset]{Stratified Balanced Training Subset (49{,}276 samples, 48.1\% synthetic duplicates). (A) Disaster classes balanced to 25\% each. (B) Victim presence balanced to 50/50. (C) Source mix; all six sources kept (hatched: synthetic). (D) Original vs.\ synthetic rows per class (red: oversampled; blue: downsampled).}
 \label{fig:balanced_training}
 \end{figure}
 
@@ -135,7 +135,7 @@ Figure~\ref{fig:balanced_training} visualises all four aspects of this transform
 
 \subsection{Data Preprocessing}
 
-\textbf{RGB:} Images are resized to 224$\times$224 and normalized to ImageNet mean and standard deviation. The base training transform includes random horizontal flip, colour jitter, Gaussian blur, and rotation. Although the loader implements explicit smoke, low-light, motion-blur, and noise functions, the reported base configuration sets no \texttt{corruption\_type}; therefore its \texttt{corruption\_prob=0.3} does not activate those explicit corruptions. For reproducibility: every base training run reported in Chapter~5 (including Tables~\ref{tab:main_results}, \ref{tab:adaptfuse_extended} and \ref{tab:ablation_results}) used no synthetic corruption augmentation; the corruption sweeps appear only in the offline evaluation of Section~\ref{sec:robustness_stress_test}.
+\textbf{RGB:} Images are resized to 224$\times$224 and normalized to ImageNet mean and standard deviation. The base training transform includes random horizontal flip, colour jitter, Gaussian blur, and rotation. Although the loader implements explicit smoke, low-light, motion-blur, and noise functions, the reported base configuration sets no corruption\_type; therefore its corruption\_prob=0.3 does not activate those explicit corruptions. For reproducibility: every base training run reported in Chapter~5 (including Tables~\ref{tab:main_results}, \ref{tab:adaptfuse_extended} and \ref{tab:ablation_results}) used no synthetic corruption augmentation; the corruption sweeps appear only in the offline evaluation of Section~\ref{sec:robustness_stress_test}.
 
 \textbf{Pseudo-thermal:} RGB-derived maps are read in grayscale, resized to 224$\times$224, and z-score normalized. The classification loader does not apply CLAHE in the reported AdapFuse-v1 run, and these intensity values are not radiometric temperatures.
 
@@ -149,7 +149,7 @@ Six fusion designs are implemented and compared to evaluate the contribution of 
 
 \begin{table}[H]
 \centering
-\caption{Summary of six fusion designs. \textit{Limitation} reports the main weakness of each design as observed in our experiments; the proposed designs (E, F) are assessed under the same criterion as the baselines.}
+\caption[Summary of the six fusion designs]{Summary of the six fusion designs. \textit{Limitation}: main weakness observed in our experiments.}
 \label{tab:designs}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}clp{4.6cm}p{5.2cm}@{}}
@@ -177,7 +177,7 @@ F  & \textbf{AdapFuse-v2 (ours, KD)} & AdapFuse-v1 teacher $\to$ knowledge disti
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/4.5.png}
-\caption{Structural and measured clean-test comparison of Design D and Design E. AdapFuse-v1 improves combined macro-F1 by 0.05 percentage points and lowers the reported focal test loss by 2.9$\times$. Its GRU is single-step in the current loader; the nuisance branch is present but unsupervised because \texttt{nuisance\_gt} is not supplied. The diagram therefore separates implemented structure from demonstrated effect.}
+\caption[Design D vs.\ Design E (AdapFuse-v1)]{Design D (fixed fusion) vs.\ Design E (AdapFuse-v1). AdapFuse-v1 gains 0.05\,pp combined macro-F1 and has a 2.9$\times$ lower focal test loss. Its GRU is single-step and its nuisance head is unsupervised.}
 \label{fig:design_comparison}
 \end{figure}
 
@@ -186,7 +186,7 @@ Figure~\ref{fig:data_provenance} summarises what our metadata actually supply fo
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/generated/4.6.png}
-\caption{Data provenance and supervision boundary recomputed from our metadata. The unified collection contains 70{,}997 measured RGB images, 70{,}997 RGB-derived pseudo-thermal maps, and 39{,}003 audio assignments referencing 2{,}000 unique ESC-50 clips, whose clip class encodes the fire/clean label. Person bounding-box paths occur in 15{,}970 C2A/SARD rows; smoke/fire boxes come only from the separate D-Fire benchmark. Nuisance labels, corruption flags, sensor-IR frames, and synchronized tri-modal sequences are absent.}
+\caption[Data provenance and supervision boundary]{Data provenance and supervision boundary. Pseudo-thermal maps are derived from RGB, and audio is label-matched (2{,}000 ESC-50 clips reused across 39{,}003 rows), not synchronized. Nuisance labels, corruption flags and sensor-IR frames are absent.}
 \label{fig:data_provenance}
 \end{figure}
 
@@ -206,7 +206,7 @@ Each backbone additionally outputs a 16-dimensional \textit{quality token}, a le
 
 \subsection{Reliability and Uncertainty Estimator (RUE)}
 
-The RUE is a two-layer MLP that receives the three 16-dim quality tokens plus a 6-dim vector of feature statistics (per-modality mean and variance of the 192-dim features). It outputs three sigmoid gates $r_i \in [0,1]$ and three uncertainty values. In the reported training path, degradation targets are passed as \texttt{None}; the gates are therefore shaped indirectly by task loss and a variance regularizer rather than calibrated against sensor-quality ground truth:
+The RUE is a two-layer MLP that receives the three 16-dim quality tokens plus a 6-dim vector of feature statistics (per-modality mean and variance of the 192-dim features). It outputs three sigmoid gates $r_i \in [0,1]$ and three uncertainty values. In the reported training path, degradation targets are passed as None; the gates are therefore shaped indirectly by task loss and a variance regularizer rather than calibrated against sensor-quality ground truth:
 
 \begin{equation}
     [r_{rgb}, r_{th}, r_{au}] = \sigma\!\left(W_2 \cdot \text{ReLU}(W_1 \cdot [\mathbf{q}_{rgb}\|\mathbf{q}_{th}\|\mathbf{q}_{au}\|\mathbf{s}] + b_1) + b_2\right)
@@ -214,7 +214,7 @@ The RUE is a two-layer MLP that receives the three 16-dim quality tokens plus a 
 
 where $\mathbf{q}_i \in \mathbb{R}^{16}$ are quality tokens, $\mathbf{s} \in \mathbb{R}^6$ are feature statistics, and $\sigma$ is the sigmoid function. Each modality's 192-dim feature vector is multiplied by its reliability score before entering the attention module, so that, by design, a modality with a low gate contributes less to the fused representation.
 
-\textbf{Limitation.} Because no degradation labels or corruption flags are supplied (\texttt{degradation\_targets=None}), nothing in training ties a gate value to sensor quality. In our row-level model, the RGB and pseudo-thermal gates are saturated at $\approx$1.0 on every row that has the input and the audio gate is $\approx$0.011, and none of them moves across the synthetic corruption sweeps (Section~\ref{sec:robustness_stress_test}); the grouped-split retraining converges to different, equally saturated gates (Section~\ref{sec:grouped_gates}). The RUE therefore acts in these experiments as a learned, run-dependent on/off weighting per modality, not as a dynamic reliability estimator. Supervising it with explicit degradation targets and testing gate response against measured degradation is future work.
+\textbf{Limitation.} Because no degradation labels or corruption flags are supplied (degradation\_targets=None), nothing in training ties a gate value to sensor quality. In our row-level model, the RGB and pseudo-thermal gates are saturated at $\approx$1.0 on every row that has the input and the audio gate is $\approx$0.011, and none of them moves across the synthetic corruption sweeps (Section~\ref{sec:robustness_stress_test}); the grouped-split retraining converges to different, equally saturated gates (Section~\ref{sec:grouped_gates}). The RUE therefore acts in these experiments as a learned, run-dependent on/off weighting per modality, not as a dynamic reliability estimator. Supervising it with explicit degradation targets and testing gate response against measured degradation is future work.
 
 \subsection{Cross-Modal Attention Fusion}
 
@@ -224,7 +224,7 @@ The three reliability-weighted features are stacked as tokens $\mathbf{T} \in \m
     \hat{\mathbf{T}} = \text{MultiHead}(\mathbf{T}, \mathbf{T}, \mathbf{T})
 \end{equation}
 
-The mean-pooled output $\hat{f} = \text{mean}(\hat{\mathbf{T}}) \in \mathbb{R}^{192}$ is passed through a GRU (hidden size 192). The current dataset provides independent frames and the implementation calls the GRU on \texttt{fused.unsqueeze(1)} without passing a hidden state, so sequence length is one and each sample starts from a zero state; nothing is carried between frames. It is therefore a gated nonlinear refinement layer in these experiments; temporal smoothing across frames is not evaluated.
+The mean-pooled output $\hat{f} = \text{mean}(\hat{\mathbf{T}}) \in \mathbb{R}^{192}$ is passed through a GRU (hidden size 192). The current dataset provides independent frames and the implementation calls the GRU on fused.unsqueeze(1) without passing a hidden state, so sequence length is one and each sample starts from a zero state; nothing is carried between frames. It is therefore a gated nonlinear refinement layer in these experiments; temporal smoothing across frames is not evaluated.
 
 \subsection{NuisanceAwareHead}
 
@@ -235,7 +235,7 @@ The NuisanceAwareHead defines logits for:
     \item \textbf{Nuisance type} (5-class: clean signal, solar heating, RGB false fire, audio false alarm, partial occlusion), an architectural auxiliary branch
 \end{enumerate}
 
-In our trainer, \texttt{nuisance\_gt=None}; consequently the nuisance loss is zero and this branch is not supervised in the reported checkpoints. At inference only disaster and victim logits are reported. The observed false-positive rate must therefore be attributed to the trained scene classifier as a whole, not specifically to nuisance supervision. Our dataset contains no nuisance-category labels, so the nuisance branch is an unvalidated architectural provision rather than a demonstrated contribution; validating it would require nuisance-labelled false-alarm data and a comparison of false-positive rates with and without nuisance supervision.
+In our trainer, nuisance\_gt=None; consequently the nuisance loss is zero and this branch is not supervised in the reported checkpoints. At inference only disaster and victim logits are reported. The observed false-positive rate must therefore be attributed to the trained scene classifier as a whole, not specifically to nuisance supervision. Our dataset contains no nuisance-category labels, so the nuisance branch is an unvalidated architectural provision rather than a demonstrated contribution; validating it would require nuisance-labelled false-alarm data and a comparison of false-positive rates with and without nuisance supervision.
 
 \subsection{Visual and Audio Backbone Variants}
 
@@ -262,7 +262,7 @@ Table~\ref{tab:backbone_candidates} applies these criteria to thirteen visual ca
 
 \begin{table}[H]
 \centering
-\caption{Visual backbone candidates. Params and MACs are for the feature extractor without its ImageNet classifier, at a $3\times224\times224$ input. Train memory is PyTorch peak allocated memory for one mixed-precision forward--backward--AdamW step of the backbone alone at batch 16. Shaded rows are inside the per-stream budget ($\leq$1\,GMAC, $\leq$5\,M params). $^\dagger$Lower bound: fused attention kernels are not counted. $^\ddagger$From the torchvision weights metadata, because the counter misses fused attention. $^\ast$Pseudo-thermal A2 only; over budget (see text). Top-1: ImageNet; Mem.: training memory.}
+\caption[Visual backbone candidates]{Visual backbone candidates (feature extractor only, $3\times224\times224$ input). Mem.: peak training memory at batch 16. Shaded rows fit the budget ($\leq$1\,GMAC, $\leq$5\,M params). $^\dagger$Lower bound. $^\ddagger$From torchvision metadata. $^\ast$Pseudo-thermal only; over budget.}
 \label{tab:backbone_candidates}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}llcccc l@{}}
@@ -293,7 +293,7 @@ ViT-B/16 & ViT & 85.80 & 17.56$^\ddagger$ & 81.1 & 2{,}628 & Over (MACs) \\
 
 \begin{table}[H]
 \centering
-\caption{Audio backbone candidates at the $1\times64\times63$ log-mel input. Upper rows are measured by the same script as Table~\ref{tab:backbone_candidates}. Lower rows are reported by Kong et al.~\cite{kong2020panns} for the full networks at their own input size, including the classifier, and are shown for scale.}
+\caption[Audio backbone candidates]{Audio backbone candidates ($1\times64\times63$ log-mel input). Lower rows are full-network figures from Kong et al.~\cite{kong2020panns}, shown for scale.}
 \label{tab:audio_candidates}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lccccl@{}}
@@ -322,7 +322,7 @@ PANNs CNN14 (reported)~\cite{kong2020panns} & 80.8 & -- & 0.431 & -- & Over (par
 \begin{itemize}
     \item \textbf{Spatial Attention Gating:} Modifies the fusion bottleneck by maintaining 2D spatial feature grids ($7 \times 7$) from RGB and thermal backbones before pooling, applying cross-modal spatial attention to align visual smoke plumes with thermal hotspots prior to RUE confidence weighting.
     \item \textbf{Domain Prompt Tokens:} Introduces $K=4$ learnable condition prompt vectors that interact with modality tokens via self-attention to encode environmental priors (e.g., daytime vs. night-time, clear vs. smoke-obscured flight).
-    \item \textbf{Isolated Component Ablation Models:} Five diagnostic variants systematically omitting or replacing key architectural blocks: (1) \texttt{ablation\_no\_gru} (omitting the single-step GRU refinement); (2) \texttt{ablation\_no\_attention} (replacing 4-head attention with mean pooling); (3) \texttt{ablation\_no\_quality\_tokens} (stripping learned quality heads); (4) \texttt{ablation\_no\_nuisance} (disabling the defined but unsupervised nuisance head); and (5) \texttt{ablation\_no\_rue} (enforcing uniform unweighted fusion).
+    \item \textbf{Isolated Component Ablation Models:} Five diagnostic variants systematically omitting or replacing key architectural blocks: (1) ablation\_no\_gru (omitting the single-step GRU refinement); (2) ablation\_no\_attention (replacing 4-head attention with mean pooling); (3) ablation\_no\_quality\_tokens (stripping learned quality heads); (4) ablation\_no\_nuisance (disabling the defined but unsupervised nuisance head); and (5) ablation\_no\_rue (enforcing uniform unweighted fusion).
 \end{itemize}
 
 \subsection{Unified Multi-Task Architecture: UniAdapFuse}
@@ -340,7 +340,7 @@ To bridge global scene perception with dense localized hazard detection, \textbf
     To reduce multi-task negative transfer, where dense bounding box gradients may disturb the shared classification backbone, UniAdapFuse v2 changes the following relative to the naive v1 run:
     \begin{itemize}
         \item \textit{Phased Curriculum:} Training begins with Phase~1 (15 epochs) freezing the detection neck and head to establish robust classification representations, followed by Phase~2 joint training.
-        \item \textit{Stop-Gradient Isolation:} Pyramid features entering the detection neck are detached (\texttt{.detach()}), preventing bounding-box regression loss from overwriting shared perceptual features.
+        \item \textit{Stop-Gradient Isolation:} Pyramid features entering the detection neck are detached (.detach()), preventing bounding-box regression loss from overwriting shared perceptual features.
         \item \textit{Differentiated Learning Rates:} Backbone encoders are updated with $0.1\times$ base learning rate ($5.0 \times 10^{-5}$), the classification stream at $1.0\times$ ($5.0 \times 10^{-4}$), and the detection head at $0.3\times$ ($1.5 \times 10^{-4}$).
         \item \textit{Further recipe changes:} logit and feature distillation from the trained AdapFuse-v1 checkpoint, a base learning rate of $5\times10^{-4}$ instead of $10^{-3}$, 80 instead of 50 epochs (patience 25 instead of 15), and loss reweighting (disaster $2.0$, detection $0.2$).
     \end{itemize}
@@ -362,7 +362,7 @@ Table~\ref{tab:training} summarises all hyperparameters used across the twenty-s
 
 \begin{table}[H]
 \centering
-\caption{Training Hyperparameters across all model families}
+\caption[Training hyperparameters]{Training hyperparameters across all model families}
 \label{tab:training}
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{9.2cm}@{}}
 \toprule
@@ -375,7 +375,7 @@ Batch size & 16 (8 for EfficientNet-B0 backbone variants) \\
 Max epochs & 50 (80 for UniAdapFuse-v2; early stopping patience = 15--25) \\
 Mixed precision & FP16 (AMP) \\
 Training data & Stratified Balanced Subset: 49{,}276 samples, 25\% per disaster class \\
-Corruption augmentation & Not active: \texttt{corruption\_prob=0.3} is set, but no \texttt{corruption\_type} is passed, so no synthetic corruption is applied during training; corruptions are used only in offline stress tests \\
+Corruption augmentation & Not active: corruption\_prob=0.3 is set, but no corruption\_type is passed, so no synthetic corruption is applied during training; corruptions are used only in offline stress tests \\
 Missing modality simulation & 20\% drop probability per sensor per sample \\
 Loss (Classification) & Focal Loss $\alpha=0.25$, $\gamma=2.0$ for disaster + victim tasks \\
 Loss (Distillation) & + logit KD (temp.=4.0) + feature KD ($\lambda=0.5$ each); used by AdapFuse-v2 and by UniAdapFuse v2 \\

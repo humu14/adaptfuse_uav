@@ -70,7 +70,7 @@
 
 \setlength{\parindent}{0em} % To control Indentation of paragraphs 
 
-\usepackage{nomencl} % The nomenclature package can be used to generate and format a nomenclature using MakeIndex.
+\usepackage[intoc]{nomencl} % [intoc]: adds the Nomenclature TOC entry on its first page. The nomenclature package can be used to generate and format a nomenclature using MakeIndex.
 \renewcommand{\nompreamble}{The next list describes several symbols \& abbreviation that will be later used within the body of the document}
 \makenomenclature
 
@@ -90,6 +90,29 @@
   \iftoggle{bbx:url}{\usebibmacro{url+urldate}}{}}
 % (2) a title ending in "?" must not capitalise the following "in"
 \DeclareCapitalPunctuation{.!}
+% (3) let long URLs and DOIs in the bibliography break so they stay inside the margin
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+\setcounter{biburlnumpenalty}{9000}
+\appto{\bibsetup}{\emergencystretch=3em}
+
+% ---- Keep text inside the margins (no wording changes) ----
+\usepackage[expansion=false]{microtype} % character protrusion: fewer over-long lines (expansion needs scalable fonts)
+\setlength{\emergencystretch}{3em} % extra stretch pass for paragraphs that would overflow
+% Section headings: report.cls defaults plus \raggedright, so long headings wrap
+% instead of running into the right margin
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-3.5ex \@plus -1ex \@minus -.2ex}{2.3ex \@plus.2ex}%
+  {\normalfont\Large\bfseries\raggedright}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}%
+  {\normalfont\large\bfseries\raggedright}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}%
+  {\normalfont\normalsize\bfseries\raggedright}}
+\renewcommand\@tocrmarg{3.5em} % room for page numbers next to long TOC entries
+\makeatother
 
 \let\cleardoublepage=\clearpage % removes unwanted doublepages
 
@@ -131,9 +154,20 @@
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Table of Contents} % Add Table of Contents in TOC
+% The Table of Contents takes one page number (v): its continuation pages print no
+% number and the count resumes at vi for the List of Figures. Those continuation
+% pages get unique hidden labels (toc6, toc7, ...) so PDF page labels and links
+% never clash with vi, vii.
+\begingroup
+\pagestyle{empty} % continuation pages: no number (\chapter* keeps "v" on the first page)
+\xdef\tocfirstpage{\the\value{page}}
+\renewcommand{\thepage}{\ifnum\value{page}=\tocfirstpage\relax\roman{page}\else toc\arabic{page}\fi}
 \tableofcontents % To  generation of the Table of Contents
-
 \cleardoublepage
+\endgroup
+\pagestyle{plain}
+\setcounter{page}{\numexpr\tocfirstpage+1\relax}
+
 \phantomsection
 \listoffigures % To  generation of the List of Figure
 
@@ -145,7 +179,6 @@
 \phantomsection
 \input{nomenclature} % Load nomenclature definitions
 \printnomenclature % TO  generation of the Nomenclature file
-\addcontentsline{toc}{chapter}{Nomenclature}
 \cleardoublepage
 
 \pagenumbering{arabic} % To use page number 1,2,3 ..
